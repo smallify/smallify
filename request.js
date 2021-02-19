@@ -31,14 +31,14 @@ Object.defineProperties(Request.prototype, {
       return this.raw.socket
     }
   },
+  headers: {
+    get () {
+      return this.raw.headers
+    }
+  },
   ip: {
     get () {
       return this.socket.remoteAddress
-    }
-  },
-  hostname: {
-    get () {
-      return this.raw.headers.host || this.raw.headers[':authority']
     }
   },
   protocol: {
@@ -46,9 +46,9 @@ Object.defineProperties(Request.prototype, {
       return this.socket.encrypted ? 'https' : 'http'
     }
   },
-  headers: {
+  hostname: {
     get () {
-      return this.raw.headers
+      return this.headers.host || this.headers[':authority']
     }
   }
 })
