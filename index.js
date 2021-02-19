@@ -1,1 +1,1 @@
-console.log('hello smallify')
+module.exports = require('./smallify')

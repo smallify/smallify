@@ -1,0 +1,63 @@
+{
+  "type": "object",
+  "properties": {
+    "pino": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "enum": [
+            "fatal",
+            "error",
+            "warn",
+            "info",
+            "debug",
+            "trace",
+            "silent"
+          ],
+          "default": "warn"
+        },
+        "name": { "type": "string", "default": "[Smallify]" }
+      },
+      "default": {}
+    },
+    "router": {
+      "type": "object",
+      "properties": { "prefix": { "type": "string", "default": "" } },
+      "default": {}
+    },
+    "errio": {
+      "type": "object",
+      "properties": {
+        "recursive": { "type": "boolean", "default": true },
+        "inherited": { "type": "boolean", "default": true },
+        "stack": { "type": "boolean", "default": false },
+        "private": { "type": "boolean", "default": false },
+        "exclude": { "type": "array", "default": [] },
+        "include": { "type": "array", "default": [] }
+      },
+      "default": {}
+    },
+    "server": {
+      "type": "object",
+      "default": {},
+      "properties": {
+        "connectionTimeout": {
+          "type": "number",
+          "default": 0
+        },
+        "keepAliveTimeout": {
+          "type": "number",
+          "default": 5000
+        },
+        "port": {
+          "type": "number",
+          "default": 4880
+        },
+        "address": {
+          "type": "string",
+          "default": "127.0.0.1"
+        }
+      }
+    }
+  }
+}

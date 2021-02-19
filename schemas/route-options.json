@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string"
+    },
+    "method": {
+      "enum": ["GET", "POST"]
+    },
+    "bodyLimit": {
+      "type": "number"
+    },
+    "$usePrefix": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": ["url", "method"]
+}
