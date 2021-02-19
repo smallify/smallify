@@ -16,16 +16,19 @@ const Reply = require('./reply')
 
 const router = new TrekRouter()
 
-function sanitizeUrl (url) {
-  for (let i = 0, len = url.length; i < len; i++) {
-    const charCode = url.charCodeAt(i)
-    // string with a `;` character (code 59), e.g. `/foo;jsessionid=123456`.
-    // Thus, we need to split on `;` as well as `?` and `#`.
-    if (charCode === 63 || charCode === 59 || charCode === 35) {
-      return url.slice(0, i)
+function parseUrl (url) {
+  const queryPrefix = url.indexOf('?')
+  if (queryPrefix > -1) {
+    return {
+      pathname: url.slice(0, queryPrefix),
+      query: url.slice(queryPrefix + 1)
+    }
+  } else {
+    return {
+      pathname: url,
+      query: ''
     }
   }
-  return url
 }
 
 function registerRouteFlow (next) {
@@ -43,14 +46,20 @@ function registerRouteFlow (next) {
 }
 
 function requestComing (req, rep) {
-  const findResult = router.find(req.method, sanitizeUrl(req.url))
+  const { pathname, query } = parseUrl(req.url)
+  const findResult = router.find(req.method, pathname)
   if (!(findResult[0] instanceof Route)) {
     return rep.writeHead(404).end('Not Found')
   }
 
   const parentRoute = findResult[0]
+  const params = {}
+  findResult[1].forEach(pm => {
+    params[pm.name] = pm.value
+  })
+
   const route = Object.create(parentRoute)
-  const smallifyReq = new Request(req, findResult[1])
+  const smallifyReq = new Request(req, params, query)
   const smallifyRep = new Reply()
 
   route[kRouteParent] = parentRoute
@@ -60,7 +69,8 @@ function requestComing (req, rep) {
   smallifyReq[kRequestRoute] = route
   smallifyRep[kReplyRoute] = route
 
-  // console.log(smallifyReq.query.a)
+  console.log(smallifyReq.query)
+  console.log(smallifyReq.params)
   rep.end('is OK')
 }
 

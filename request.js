@@ -1,16 +1,18 @@
-// const queryString = require('querystring')
+const queryString = require('querystring')
 
-function Request (raw, params) {
-  // this.raw = raw
-  // const queryPrefix = raw.url.indexOf('?')
-  // this.query = queryString.parse(
-  //   queryPrefix > -1 ? raw.url.slice(queryPrefix + 1) : ''
-  // )
-  // this.params = {}
-  // params.forEach(pm => {
-  //   this.params[pm.name] = pm.value
-  // })
-  // this.body = null
+function Request (raw, params, query) {
+  params = params || {}
+  query = queryString.parse(query) || {}
+
+  this.raw = raw
+  this.params = params || {}
+  this.query = {}
+
+  for (const k in query) {
+    this.query[k] = query[k]
+  }
+
+  this.body = null
 }
 
 Object.defineProperties(Request.prototype, {

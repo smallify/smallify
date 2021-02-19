@@ -43,7 +43,6 @@
     "fastq": "^1.10.1",
     "merge": "^2.1.0",
     "pino": "^6.11.1",
-    "radix-router": "^3.0.1",
     "super-error": "^2.4.0",
     "trek-router": "^1.2.0"
   }
