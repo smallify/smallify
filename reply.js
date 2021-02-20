@@ -1,3 +1,12 @@
-function Reply () {}
+const { kReplyDecorates } = require('./symbols')
 
-module.exports = Reply
+function Reply () {
+  this[kReplyDecorates] = []
+}
+
+function initReply () {}
+
+module.exports = {
+  Reply,
+  initReply
+}

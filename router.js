@@ -2,6 +2,8 @@ const TrekRouter = require('trek-router')
 // const asyncLib = require('async')
 
 const {
+  kSmallifyRequest,
+  kSmallifyReply,
   kRequestRoute,
   kReplyRoute,
   kRouteParent,
@@ -11,8 +13,8 @@ const {
 
 const { Route } = require('./route')
 const { RouteExistsError } = require('./errors')
-const Request = require('./request')
-const Reply = require('./reply')
+const { initRequest } = require('./request')
+const { initReply } = require('./reply')
 
 const router = new TrekRouter()
 
@@ -59,8 +61,11 @@ function requestComing (req, rep) {
   })
 
   const route = Object.create(parentRoute)
-  const smallifyReq = new Request(req, params, query)
-  const smallifyRep = new Reply()
+  const smallifyReq = Object.create(route.$smallify[kSmallifyRequest])
+  const smallifyRep = Object.create(route.$smallify[kSmallifyReply])
+
+  initRequest.call(smallifyReq, req, params, query)
+  initReply.call(smallifyRep)
 
   route[kRouteParent] = parentRoute
   route[kRouteRequest] = smallifyReq

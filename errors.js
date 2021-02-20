@@ -24,10 +24,18 @@ const RouteExistsError = SmallifyError.subclass('RouteExistsError', function (
   this.message = `The route has been registered : ${url}`
 })
 
+const PluginVersioMismatchError = SmallifyError.subclass(
+  'PluginVersioMismatchError',
+  function (name, expected, installed) {
+    this.message = `smallify-plugin: ${name} - expected '${expected}' smallify version, '${installed}' is installed`
+  }
+)
+
 module.exports = {
   SmallifyError,
   DecorateExistsError,
   RouteOptionsError,
   HookCallbackError,
-  RouteExistsError
+  RouteExistsError,
+  PluginVersioMismatchError
 }

@@ -1,21 +1,17 @@
 const queryString = require('querystring')
 
-function Request (raw, params, query) {
-  params = params || {}
-  query = queryString.parse(query) || {}
+const { kRequestRaw, kRequestDecorates } = require('./symbols')
 
-  this.raw = raw
-  this.params = params || {}
-  this.query = {}
-
-  for (const k in query) {
-    this.query[k] = query[k]
-  }
-
-  this.body = null
+function Request () {
+  this[kRequestDecorates] = []
 }
 
 Object.defineProperties(Request.prototype, {
+  raw: {
+    get () {
+      return this[kRequestRaw]
+    }
+  },
   url: {
     get () {
       return this.raw.url
@@ -53,4 +49,21 @@ Object.defineProperties(Request.prototype, {
   }
 })
 
-module.exports = Request
+function initRequest (raw, params, query) {
+  params = params || {}
+  query = queryString.parse(query) || {}
+
+  this[kRequestRaw] = raw
+  this.params = params || {}
+  this.query = {}
+  for (const k in query) {
+    this.query[k] = query[k]
+  }
+
+  this.body = null
+}
+
+module.exports = {
+  Request,
+  initRequest
+}

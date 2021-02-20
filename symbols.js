@@ -10,9 +10,12 @@ module.exports = {
   kSmallifyErrio: Symbol('smallify.errio'),
   kSmallifyServer: Symbol('smallify.server'),
 
+  kSmallifyParent: Symbol('smallify.parent'),
   kSmallifyChildren: Symbol('smallify.children'),
   kSmallifyRoutes: Symbol('smallify.routes'),
   kSmallifyDecorates: Symbol('smallify.decorates'),
+  kSmallifyRequest: Symbol('smallify.request'),
+  kSmallifyReply: Symbol('smallify.reply'),
 
   kServerListening: Symbol('server.listening'),
 
@@ -24,6 +27,11 @@ module.exports = {
   kRouteReply: Symbol('route.reply'),
 
   kRequestRoute: Symbol('request.route'),
+  kRequestRaw: Symbol('request.raw'),
+  kRequestDecorates: Symbol('request.decorates'),
 
-  kReplyRoute: Symbol('reply.route')
+  kReplyRoute: Symbol('reply.route'),
+  kReplyDecorates: Symbol('reply.decorates'),
+
+  kSmallifyPluginMeta: Symbol.for('smallify.plugin.meta')
 }

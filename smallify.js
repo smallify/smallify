@@ -6,8 +6,11 @@ const {
   kSmallifyVersion,
   kSmallifyAvvio,
   kSmallifyDecorates,
-  kSmallifyRoutes,
-  kSmallifyChildren
+  kSmallifyParent,
+  kSmallifyRequest,
+  kSmallifyReply,
+  kRequestDecorates,
+  kReplyDecorates
 } = require('./symbols')
 
 const { DecorateExistsError } = require('./errors')
@@ -17,9 +20,12 @@ const { initHooks } = require('./hooks')
 
 const smallifyOptions = require('./options')
 const smallifyAvvio = require('avvio')
-const smallifyOverride = require('./override')
+const { avvioOverride, initScope } = require('./override')
 const initSmallifyDecorates = require('./decorates')
 const initSmallifyPlugins = require('./plugins')
+
+const { Request } = require('./request')
+const { Reply } = require('./reply')
 
 function Smallify (opts) {
   if (!(this instanceof Smallify)) {
@@ -31,9 +37,13 @@ function Smallify (opts) {
   this[kSmallifyOptions] = smallifyOptions(opts)
   this[kSmallifyRouterPrefix] = opts.router.prefix
   this[kSmallifyVersion] = require('./package.json').version
-  this[kSmallifyDecorates] = []
-  this[kSmallifyRoutes] = []
-  this[kSmallifyChildren] = []
+
+  this[kSmallifyParent] = null
+  this[kSmallifyRequest] = new Request()
+  this[kSmallifyReply] = new Reply()
+
+  initScope.call(this)
+
   this[kSmallifyAvvio] = smallifyAvvio(this, {
     expose: {
       use: 'register',
@@ -42,7 +52,7 @@ function Smallify (opts) {
     autostart: true,
     timeout: 15000
   })
-  this[kSmallifyAvvio].override = smallifyOverride
+  this[kSmallifyAvvio].override = avvioOverride
 
   initSmallifyProperties.call(this)
   initSmallifyDecorates.call(this)
@@ -66,6 +76,42 @@ Smallify.prototype.decorate = function (prop, value) {
 
 Smallify.prototype.hasDecorator = function (prop) {
   return prop in this
+}
+
+Smallify.prototype.decorateRequest = function (prop, value) {
+  const req = this[kSmallifyRequest]
+
+  if (prop in req) {
+    throw new DecorateExistsError()
+  }
+
+  req[prop] = value
+  req[kRequestDecorates].push(prop)
+  return this
+}
+
+Smallify.prototype.hasRequestDecorator = function (prop) {
+  const req = this[kSmallifyRequest]
+
+  return prop in req
+}
+
+Smallify.prototype.decorateReply = function (prop, value) {
+  const rep = this[kSmallifyReply]
+
+  if (prop in rep) {
+    throw new DecorateExistsError()
+  }
+
+  rep[prop] = value
+  rep[kReplyDecorates].push(prop)
+  return this
+}
+
+Smallify.prototype.hasReplyDecorator = function (prop) {
+  const rep = this[kSmallifyReply]
+
+  return prop in rep
 }
 
 Smallify.prototype.route = function (opts, handler) {
