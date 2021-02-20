@@ -16,6 +16,7 @@ module.exports = {
   kSmallifyDecorates: Symbol('smallify.decorates'),
   kSmallifyRequest: Symbol('smallify.request'),
   kSmallifyReply: Symbol('smallify.reply'),
+  kSmallifyHooks: Symbol('smallify.hooks'),
 
   kServerListening: Symbol('server.listening'),
 

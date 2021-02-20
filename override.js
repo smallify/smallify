@@ -16,6 +16,7 @@ const {
 
 const { PluginVersioMismatchError } = require('./errors')
 const { initQueue } = require('./queue')
+const { initHooks } = require('./hooks')
 
 const Merge = require('merge')
 const Semver = require('semver')
@@ -66,7 +67,10 @@ function avvioOverride (old, fn, opts) {
   )
 
   initScope.call(ins)
+  initHooks.call(ins)
   initQueue.call(ins)
+
+  return ins
 }
 
 function buildRouterPrefix (iPrefix, pPrefix) {

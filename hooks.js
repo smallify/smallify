@@ -1,12 +1,8 @@
 const asyncLib = require('async')
 const { isArrow } = require('extra-function')
 const { HookCallbackError } = require('./errors')
+const { kSmallifyHooks, kSmallifyParent } = require('./symbols')
 
-const hooks = {
-  onClose: [],
-  onRoute: [],
-  onError: []
-}
 const routeHooks = []
 
 function printError (e) {
@@ -14,6 +10,7 @@ function printError (e) {
 }
 
 function addHook (name, fn) {
+  const hooks = this[kSmallifyHooks]
   if (!(name in hooks)) {
     return
   }
@@ -31,54 +28,67 @@ function addHook (name, fn) {
 }
 
 function runHooks (name, ins, done, ...args) {
-  if (!(name in hooks)) {
-    return done()
-  }
+  const parent = this[kSmallifyParent]
 
-  const doHooks = [...hooks[name]]
-  if (ins && name in ins) {
-    const insHook = ins[name]
-    if (typeof insHook === 'function') {
-      doHooks.push(insHook)
+  function _runHooks () {
+    const hooks = this[kSmallifyHooks]
+
+    if (!(name in hooks)) {
+      return done()
     }
-  }
 
-  let doCount = 0
-  asyncLib.whilst(
-    function (next) {
-      next(null, doCount < doHooks.length)
-    },
-    function (next) {
-      function done (e) {
-        doCount++
-        next(e)
-      }
-      try {
-        let doHook = doHooks[doCount]
-        if (ins) {
-          doHook = doHook.bind(ins)
-        }
-        const pLike = doHook(...args)
-        if (pLike && typeof pLike.then === 'function') {
-          pLike.then(() => done()).catch(e => done(e))
-        } else {
-          done()
-        }
-      } catch (e) {
-        done(e)
-      }
-    },
-    function (err) {
-      if (done) {
-        done(err)
+    const doHooks = [...hooks[name]]
+    if (ins && name in ins) {
+      const insHook = ins[name]
+      if (typeof insHook === 'function') {
+        doHooks.push(insHook)
       }
     }
-  )
+
+    let doCount = 0
+    asyncLib.whilst(
+      function (next) {
+        next(null, doCount < doHooks.length)
+      },
+      function (next) {
+        function _done (e) {
+          doCount++
+          next(e)
+        }
+        try {
+          let doHook = doHooks[doCount]
+          if (ins) {
+            doHook = doHook.bind(ins)
+          }
+          const pLike = doHook(...args)
+          if (pLike && typeof pLike.then === 'function') {
+            pLike.then(() => done()).catch(e => _done(e))
+          } else {
+            _done()
+          }
+        } catch (e) {
+          _done(e)
+        }
+      },
+      function (err) {
+        if (done) {
+          done(err)
+        }
+      }
+    )
+  }
+
+  if (parent) {
+    runHooks.call(parent, name, ins, _runHooks.bind(this), ...args)
+  } else {
+    _runHooks.call(this)
+  }
 }
 
 function runHooksAsync (name, ins, ...args) {
   return new Promise((resolve, reject) => {
-    runHooks(
+    runHooks.call(
+      this,
       name,
       ins,
       err => {
@@ -94,9 +104,15 @@ function runHooksAsync (name, ins, ...args) {
 }
 
 function initHooks () {
-  this.$log.info('decorate addHook')
   this.addHook = addHook.bind(this)
+  this[kSmallifyHooks] = {
+    onClose: [],
+    onRoute: [],
+    onError: []
+  }
+}
 
+function attachHooks () {
   this._onClose((ins, done) => {
     runHooks('onClose', ins, done)
   })
@@ -104,18 +120,20 @@ function initHooks () {
 }
 
 function throwError (ins, e) {
-  runHooks('onError', ins, null, e)
+  runHooks.call(ins, 'onError', ins, null, e)
 }
 
 function onRouteFlow (next) {
   const { $smallify } = this
-  runHooksAsync('onRoute', $smallify, this)
+  runHooksAsync
+    .call($smallify, 'onRoute', $smallify, this)
     .then(() => next())
     .catch(e => next(e))
 }
 
 module.exports = {
   initHooks,
+  attachHooks,
   routeHooks,
   throwError,
   onRouteFlow
