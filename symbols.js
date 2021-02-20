@@ -17,6 +17,7 @@ module.exports = {
   kSmallifyRequest: Symbol('smallify.request'),
   kSmallifyReply: Symbol('smallify.reply'),
   kSmallifyHooks: Symbol('smallify.hooks'),
+  kSmallifyParserDict: Symbol('smallify.parser.dict'),
 
   kServerListening: Symbol('server.listening'),
 
@@ -26,6 +27,7 @@ module.exports = {
   kRouteParent: Symbol('route.parent'),
   kRouteRequest: Symbol('route.request'),
   kRouteReply: Symbol('route.reply'),
+  kRouteSpan: Symbol('route.span'),
 
   kRequestRoute: Symbol('request.route'),
   kRequestRaw: Symbol('request.raw'),

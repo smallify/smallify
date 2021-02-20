@@ -24,6 +24,7 @@ module.exports = function (smallify, opts, done) {
 
   const server = http.createServer((req, rep) => {
     if (this[kServerListening] === true) {
+      req.pause()
       requestComing.call(smallify, req, rep)
     }
   })

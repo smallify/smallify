@@ -6,15 +6,29 @@ const smallify = Smallify({
   }
 })
 
-// smallify.register(async () => {})
+smallify.register(
+  async function (ins1) {
+    ins1.route({
+      url: '/math/add',
+      method: 'POST',
+      handler (req, rep) {}
+    })
+  },
+  { name: 'ins1' }
+)
 
-smallify.route({
-  url: '/math/add',
-  method: 'GET',
-  handler (req, rep) {}
+smallify.addHook('onRequest', function (req, rep) {
+  this.$log.info('do onRequest hook')
+})
+
+smallify.addHook('onBeforeParsing', function (req, rep) {
+  this.$log.info('do onBeforeParsing hook')
+})
+
+smallify.addHook('onAfterParsing', function (req, rep) {
+  this.$log.info('do onAfterParsing hook')
 })
 
 smallify.ready(e => {
-  smallify.$log.info('aaaaaaaaaa')
   e && smallify.$log.error(e.message)
 })

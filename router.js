@@ -1,5 +1,5 @@
 const TrekRouter = require('trek-router')
-// const asyncLib = require('async')
+const asyncLib = require('async')
 
 const {
   kSmallifyRequest,
@@ -11,10 +11,18 @@ const {
   kRouteReply
 } = require('./symbols')
 
+const {
+  throwError,
+  onRequestFlow,
+  onBeforeParsingFlow,
+  onAfterParsingFlow
+} = require('./hooks')
+
 const { Route } = require('./route')
 const { RouteExistsError } = require('./errors')
 const { initRequest } = require('./request')
 const { initReply } = require('./reply')
+const { onParsingFlow } = require('./parser')
 
 const router = new TrekRouter()
 
@@ -61,8 +69,9 @@ function requestComing (req, rep) {
   })
 
   const route = Object.create(parentRoute)
-  const smallifyReq = Object.create(route.$smallify[kSmallifyRequest])
-  const smallifyRep = Object.create(route.$smallify[kSmallifyReply])
+  const { $smallify } = route
+  const smallifyReq = Object.create($smallify[kSmallifyRequest])
+  const smallifyRep = Object.create($smallify[kSmallifyReply])
 
   initRequest.call(smallifyReq, req, params, query)
   initReply.call(smallifyRep)
@@ -74,9 +83,28 @@ function requestComing (req, rep) {
   smallifyReq[kRequestRoute] = route
   smallifyRep[kReplyRoute] = route
 
-  console.log(smallifyReq.query)
-  console.log(smallifyReq.params)
-  rep.end('is OK')
+  // req.on('data', d => {
+  //   console.log({
+  //     d
+  //   })
+  // })
+  // req.resume()
+
+  asyncLib.series(
+    [
+      onRequestFlow.bind(route),
+      onBeforeParsingFlow.bind(route),
+      onParsingFlow.bind(route),
+      onAfterParsingFlow.bind(route)
+    ],
+    e => {
+      if (e) {
+        throwError($smallify, e)
+      }
+    }
+  )
+
+  rep.end('is OK asda')
 }
 
 module.exports = {

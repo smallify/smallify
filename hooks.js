@@ -1,7 +1,13 @@
 const asyncLib = require('async')
 const { isArrow } = require('extra-function')
 const { HookCallbackError } = require('./errors')
-const { kSmallifyHooks, kSmallifyParent } = require('./symbols')
+const {
+  kSmallifyHooks,
+  kSmallifyParent,
+  kRouteRequest,
+  kRouteReply,
+  kRouteSpan
+} = require('./symbols')
 
 const routeHooks = []
 
@@ -109,8 +115,13 @@ function initHooks () {
   this.addHook = addHook.bind(this)
   this[kSmallifyHooks] = {
     onClose: [],
+    onError: [],
+
     onRoute: [],
-    onError: []
+
+    onRequest: [],
+    onBeforeParsing: [],
+    onAfterParsing: []
   }
 }
 
@@ -133,10 +144,42 @@ function onRouteFlow (next) {
     .catch(e => next(e))
 }
 
+function doRequestLifecycle (hookName, next) {
+  const { $smallify } = this
+  const req = this[kRouteRequest]
+  const rep = this[kRouteReply]
+
+  runHooksAsync
+    .call($smallify, hookName, this, req, rep)
+    .then(() => next())
+    .catch(e => next(e))
+}
+
+function onRequestFlow (next) {
+  const now = Date.now()
+  const { $log } = this
+
+  $log.debug(`request incoming(${now}): ${this.url}`)
+  this[kRouteSpan] = now
+
+  doRequestLifecycle.call(this, 'onRequest', next)
+}
+
+function onBeforeParsingFlow (next) {
+  doRequestLifecycle.call(this, 'onBeforeParsing', next)
+}
+
+function onAfterParsingFlow (next) {
+  doRequestLifecycle.call(this, 'onAfterParsing', next)
+}
+
 module.exports = {
   initHooks,
   attachHooks,
   routeHooks,
   throwError,
-  onRouteFlow
+  onRouteFlow,
+  onRequestFlow,
+  onBeforeParsingFlow,
+  onAfterParsingFlow
 }

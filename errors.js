@@ -31,11 +31,19 @@ const PluginVersioMismatchError = SmallifyError.subclass(
   }
 )
 
+const ContentTypeParserError = SmallifyError.subclass(
+  'ContentTypeParserError',
+  function (message) {
+    this.message = message
+  }
+)
+
 module.exports = {
   SmallifyError,
   DecorateExistsError,
   RouteOptionsError,
   HookCallbackError,
   RouteExistsError,
-  PluginVersioMismatchError
+  PluginVersioMismatchError,
+  ContentTypeParserError
 }

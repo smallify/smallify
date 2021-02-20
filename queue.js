@@ -129,6 +129,14 @@ function addRoute (opts, handler) {
     route.url = `${prefix}${route.url}`
   }
 
+  if (typeof route.bodyLimit !== 'number') {
+    const {
+      $options: { server }
+    } = this
+
+    route.bodyLimit = server.bodyLimit
+  }
+
   this[kSmallifyRoutes].push(route.url)
   this[kQueueRoutes].push(route)
 }

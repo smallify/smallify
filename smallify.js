@@ -15,8 +15,9 @@ const {
 
 const { DecorateExistsError } = require('./errors')
 const { initSmallifyProperties } = require('./properties')
-const { initQueue, attachAvvio, addRoute } = require('./queue')
+const { attachAvvio, initQueue, addRoute } = require('./queue')
 const { attachHooks, initHooks } = require('./hooks')
+const { attachParser, initParser } = require('./parser')
 
 const smallifyOptions = require('./options')
 const smallifyAvvio = require('avvio')
@@ -57,8 +58,11 @@ function Smallify (opts) {
   initSmallifyProperties.call(this)
   initSmallifyDecorates.call(this)
 
+  initParser.call(this)
   initHooks.call(this)
   initQueue.call(this)
+
+  attachParser.call(this)
   attachHooks.call(this)
   attachAvvio.call(this)
 

@@ -5,7 +5,7 @@
       "type": "string"
     },
     "method": {
-      "enum": ["GET", "POST"]
+      "enum": ["HEAD", "GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"]
     },
     "bodyLimit": {
       "type": "number"
