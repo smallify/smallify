@@ -22,7 +22,7 @@ const { Route } = require('./route')
 const { RouteExistsError } = require('./errors')
 const { initRequest } = require('./request')
 const { initReply } = require('./reply')
-const { onParsingFlow } = require('./parser')
+const { onParsingFlow, rawBody } = require('./parser')
 
 const router = new TrekRouter()
 
@@ -70,41 +70,42 @@ function requestComing (req, rep) {
 
   const route = Object.create(parentRoute)
   const { $smallify } = route
-  const smallifyReq = Object.create($smallify[kSmallifyRequest])
-  const smallifyRep = Object.create($smallify[kSmallifyReply])
 
-  initRequest.call(smallifyReq, req, params, query)
-  initReply.call(smallifyRep)
+  rawBody
+    .call(route, req)
+    .then(body => {
+      const smallifyReq = Object.create($smallify[kSmallifyRequest])
+      const smallifyRep = Object.create($smallify[kSmallifyReply])
 
-  route[kRouteParent] = parentRoute
-  route[kRouteRequest] = smallifyReq
-  route[kRouteReply] = smallifyRep
+      initRequest.call(smallifyReq, req, params, query, body)
+      initReply.call(smallifyRep)
 
-  smallifyReq[kRequestRoute] = route
-  smallifyRep[kReplyRoute] = route
+      route[kRouteParent] = parentRoute
+      route[kRouteRequest] = smallifyReq
+      route[kRouteReply] = smallifyRep
 
-  // req.on('data', d => {
-  //   console.log({
-  //     d
-  //   })
-  // })
-  // req.resume()
+      smallifyReq[kRequestRoute] = route
+      smallifyRep[kReplyRoute] = route
 
-  asyncLib.series(
-    [
-      onRequestFlow.bind(route),
-      onBeforeParsingFlow.bind(route),
-      onParsingFlow.bind(route),
-      onAfterParsingFlow.bind(route)
-    ],
-    e => {
-      if (e) {
-        throwError($smallify, e)
-      }
-    }
-  )
+      asyncLib.series(
+        [
+          onRequestFlow.bind(route),
+          onBeforeParsingFlow.bind(route),
+          onParsingFlow.bind(route),
+          onAfterParsingFlow.bind(route)
+        ],
+        e => {
+          if (e) {
+            throwError($smallify, e)
+          }
+        }
+      )
 
-  rep.end('is OK asda')
+      rep.end('is OK asda')
+    })
+    .catch(err => {
+      throwError($smallify, err)
+    })
 }
 
 module.exports = {

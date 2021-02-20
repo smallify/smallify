@@ -8,15 +8,15 @@ const { throwError } = require('./hooks')
 const { ContentTypeParserError } = require('./errors')
 const { isArrow } = require('extra-function')
 
-function rawBody (req, rep) {
+function rawBody (req) {
   return new Promise((resolve, reject) => {
-    const raw = req.raw
+    const raw = req
+    const body = []
     const limit = this.bodyLimit
-    const contentLength = req.headers['content-length']
+    const contentLength = raw.headers['content-length']
 
     let eLen = NaN
     let rLen = 0
-    let body = ''
 
     if (contentLength) {
       eLen = Number.parseInt(contentLength, 10)
@@ -35,13 +35,10 @@ function rawBody (req, rep) {
         return reject(err)
       }
 
-      body += chunk
+      body.push(chunk)
     }
 
     function onEnd (err) {
-      console.log({
-        err
-      })
       raw.removeListener('data', onData)
       raw.removeListener('end', onEnd)
       raw.removeListener('error', onEnd)
@@ -51,12 +48,6 @@ function rawBody (req, rep) {
         return reject(err)
       }
 
-      console.log({
-        eLen,
-        rLen,
-        body
-      })
-
       if (!Number.isNaN(eLen) && eLen !== rLen) {
         err = new ContentTypeParserError(
           'Request body size did not match Content-Length'
@@ -65,27 +56,29 @@ function rawBody (req, rep) {
         return reject(err)
       }
 
-      resolve(body)
+      const nBody = Buffer.concat(body)
+
+      resolve(nBody)
     }
 
-    // raw.setEncoding('utf8')
     raw.on('data', onData)
     raw.on('end', onEnd)
     raw.on('error', onEnd)
     raw.resume()
-
-    // console.log(raw)
   })
 }
 
 function applicationJson (req, rep) {
-  return rawBody.call(this, req, rep).then(body => {
-    console.log(body)
-  })
+  const body = req.body.toString('utf-8')
+
+  req.body = JSON.parse(body)
+
+  console.log(req.body)
 }
 
 function textPlain (req, rep) {
-  return rawBody.call(this, req, rep).then(body => {})
+  const body = req.body.toString('utf-8')
+  req.body = body
 }
 
 function addContentTypeParser (contentType, parserFn) {
@@ -198,5 +191,6 @@ function onParsingFlow (next) {
 module.exports = {
   initParser,
   attachParser,
-  onParsingFlow
+  onParsingFlow,
+  rawBody
 }

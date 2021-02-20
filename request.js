@@ -49,7 +49,7 @@ Object.defineProperties(Request.prototype, {
   }
 })
 
-function initRequest (raw, params, query) {
+function initRequest (raw, params, query, body) {
   params = params || {}
   query = queryString.parse(query) || {}
 
@@ -60,7 +60,7 @@ function initRequest (raw, params, query) {
     this.query[k] = query[k]
   }
 
-  this.body = null
+  this.body = body
 }
 
 module.exports = {
