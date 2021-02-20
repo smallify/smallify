@@ -1,5 +1,5 @@
 const Smallify = require('../index')
-const { kSmallifyParent } = require('../symbols')
+// const { kSmallifyParent } = require('../symbols')
 
 const smallify = Smallify({
   pino: {
@@ -11,6 +11,9 @@ function routeTest (m) {
   return function (route) {
     route.msg = route.msg || ''
     route.msg += m
+    // if (m === '2') {
+    //   throw new Error('from routeTest')
+    // }
   }
 }
 
@@ -31,11 +34,28 @@ smallify.register(
               msg: this.msg,
               version: this.$smallify.$version
             })
-            console.log({ ins2, parent: ins2[kSmallifyParent] })
+            // console.log({ ins2, parent: ins2[kSmallifyParent] })
           }
         })
       },
       { name: 'ins2' }
+    )
+
+    ins1.register(
+      async function (ins3) {
+        ins3.addHook('onRoute', routeTest('4'))
+        ins3.route({
+          url: '/math/:sub',
+          method: 'GET',
+          handler (req, rep) {
+            console.log({
+              msg: this.msg,
+              version: this.$smallify.$version
+            })
+          }
+        })
+      },
+      { name: 'ins3' }
     )
   },
   { name: 'ins1' }

@@ -30,11 +30,15 @@ function addHook (name, fn) {
 function runHooks (name, ins, done, ...args) {
   const parent = this[kSmallifyParent]
 
-  function _runHooks () {
+  function _runHooks (err) {
+    if (err) {
+      return done && done(err)
+    }
+
     const hooks = this[kSmallifyHooks]
 
     if (!(name in hooks)) {
-      return done()
+      return done && done()
     }
 
     const doHooks = [...hooks[name]]
@@ -71,9 +75,7 @@ function runHooks (name, ins, done, ...args) {
         }
       },
       function (err) {
-        if (done) {
-          done(err)
-        }
+        done && done(err)
       }
     )
   }
