@@ -17,6 +17,7 @@ const { initRouteProperties } = require('./properties')
 const { routeHooks, throwError, onRouteFlow } = require('./hooks')
 const { registerRouteFlow } = require('./router')
 const { isArrow } = require('extra-function')
+const { buildAjvErrorsMsg } = require('./validation')
 
 const FastQ = require('fastq')
 const { default: AJV } = require('ajv')
@@ -25,14 +26,6 @@ const asyncLib = require('async')
 const ajv = new AJV({ useDefaults: true, coerceTypes: true })
 
 function noop () {}
-
-function buildAjvErrorsMsg (errs) {
-  const es = []
-  errs.forEach(e => {
-    es.push(`schema path: [${e.schemaPath}] message: ${e.message}`)
-  })
-  return es.join('\n')
-}
 
 function activeQueue (name) {
   return new Promise(resolve => {

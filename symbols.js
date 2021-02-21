@@ -36,5 +36,10 @@ module.exports = {
   kReplyRoute: Symbol('reply.route'),
   kReplyDecorates: Symbol('reply.decorates'),
 
+  kValidationParams: Symbol('validation.params'),
+  kValidationQuery: Symbol('validation.query'),
+  kValidationBody: Symbol('validation.body'),
+  kValidationResponse: Symbol('validation.response'),
+
   kSmallifyPluginMeta: Symbol.for('smallify.plugin.meta')
 }

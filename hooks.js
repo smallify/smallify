@@ -121,7 +121,9 @@ function initHooks () {
 
     onRequest: [],
     onBeforeParsing: [],
-    onAfterParsing: []
+    onAfterParsing: [],
+    onBeforeValidation: [],
+    onAfterValidation: []
   }
 }
 
@@ -144,15 +146,17 @@ function onRouteFlow (next) {
     .catch(e => next(e))
 }
 
-function doRequestLifecycle (hookName, next) {
-  const { $smallify } = this
-  const req = this[kRouteRequest]
-  const rep = this[kRouteReply]
+function generalLifecycle (hookName) {
+  return function (next) {
+    const { $smallify } = this
+    const req = this[kRouteRequest]
+    const rep = this[kRouteReply]
 
-  runHooksAsync
-    .call($smallify, hookName, this, req, rep)
-    .then(() => next())
-    .catch(e => next(e))
+    runHooksAsync
+      .call($smallify, hookName, this, req, rep)
+      .then(() => next())
+      .catch(e => next(e))
+  }
 }
 
 function onRequestFlow (next) {
@@ -162,16 +166,26 @@ function onRequestFlow (next) {
   $log.debug(`request incoming(${now}): ${this.url}`)
   this[kRouteSpan] = now
 
-  doRequestLifecycle.call(this, 'onRequest', next)
+  generalLifecycle('onRequest').call(this, next)
+
+  // doRequestLifecycle.call(this, 'onRequest', next)
 }
 
-function onBeforeParsingFlow (next) {
-  doRequestLifecycle.call(this, 'onBeforeParsing', next)
-}
+// function onBeforeParsingFlow (next) {
+//   doRequestLifecycle.call(this, 'onBeforeParsing', next)
+// }
 
-function onAfterParsingFlow (next) {
-  doRequestLifecycle.call(this, 'onAfterParsing', next)
-}
+// function onAfterParsingFlow (next) {
+//   doRequestLifecycle.call(this, 'onAfterParsing', next)
+// }
+
+// function onBeforeValidationFlow (next) {
+//   doRequestLifecycle.call(this, 'onBeforeValidation', next)
+// }
+
+// function onAfterValidationFlow (next) {
+//   doRequestLifecycle.call(this, 'onAfterValidation', next)
+// }
 
 module.exports = {
   initHooks,
@@ -180,6 +194,8 @@ module.exports = {
   throwError,
   onRouteFlow,
   onRequestFlow,
-  onBeforeParsingFlow,
-  onAfterParsingFlow
+  onBeforeParsingFlow: generalLifecycle('onBeforeParsing'),
+  onAfterParsingFlow: generalLifecycle('onAfterParsing'),
+  onBeforeValidationFlow: generalLifecycle('onBeforeValidation'),
+  onAfterValidationFlow: generalLifecycle('onAfterValidation')
 }

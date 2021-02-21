@@ -4,9 +4,11 @@ const {
   kRouteReply,
   kSmallifyParent
 } = require('./symbols')
+
 const { throwError } = require('./hooks')
 const { ContentTypeParserError } = require('./errors')
 const { isArrow } = require('extra-function')
+const secureJson = require('secure-json-parse')
 
 function rawBody (req) {
   return new Promise((resolve, reject) => {
@@ -69,11 +71,22 @@ function rawBody (req) {
 }
 
 function applicationJson (req, rep) {
-  const body = req.body.toString('utf-8')
+  return new Promise((resolve, reject) => {
+    const body = req.body.toString('utf-8')
 
-  req.body = JSON.parse(body)
+    if (body === '' || !body) {
+      req.body = {}
+      return resolve()
+    }
 
-  console.log(req.body)
+    try {
+      req.body = secureJson.parse(body)
+      return resolve()
+    } catch (e) {
+      e.statusCode = 400
+      return reject(e)
+    }
+  })
 }
 
 function textPlain (req, rep) {
@@ -99,9 +112,9 @@ function addContentTypeParser (contentType, parserFn) {
     return throwError(this, err)
   }
 
-  if (contentType === '*') {
-    contentType = ''
-  }
+  // if (contentType === '*') {
+  //   contentType = ''
+  // }
 
   parserDict[contentType] = parserFn
 

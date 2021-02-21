@@ -29,6 +29,14 @@ smallify.addHook('onAfterParsing', function (req, rep) {
   this.$log.info('do onAfterParsing hook')
 })
 
+smallify.addHook('onBeforeValidation', function (req, rep) {
+  this.$log.info('do onBeforeValidation hook')
+})
+
+smallify.addHook('onAfterValidation', function (req, rep) {
+  this.$log.info('do onAfterValidation hook')
+})
+
 smallify.ready(e => {
   e && smallify.$log.error(e.message)
 })
