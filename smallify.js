@@ -18,6 +18,7 @@ const { initSmallifyProperties } = require('./properties')
 const { attachAvvio, initQueue, addRoute } = require('./queue')
 const { attachHooks, initHooks } = require('./hooks')
 const { attachParser, initParser } = require('./parser')
+const { attachValidation } = require('./validation')
 
 const smallifyOptions = require('./options')
 const smallifyAvvio = require('avvio')
@@ -63,6 +64,7 @@ function Smallify (opts) {
   initQueue.call(this)
 
   attachParser.call(this)
+  attachValidation.call(this)
   attachHooks.call(this)
   attachAvvio.call(this)
 

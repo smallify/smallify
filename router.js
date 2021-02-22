@@ -15,7 +15,9 @@ const {
   throwError,
   onRequestFlow,
   onBeforeParsingFlow,
-  onAfterParsingFlow
+  onAfterParsingFlow,
+  onBeforeValidationFlow,
+  onAfterValidationFlow
 } = require('./hooks')
 
 const { Route } = require('./route')
@@ -23,6 +25,7 @@ const { RouteExistsError } = require('./errors')
 const { initRequest } = require('./request')
 const { initReply } = require('./reply')
 const { onParsingFlow, rawBody } = require('./parser')
+const { onValidationFlow } = require('./validation')
 
 const router = new TrekRouter()
 
@@ -92,7 +95,10 @@ function requestComing (req, rep) {
           onRequestFlow.bind(route),
           onBeforeParsingFlow.bind(route),
           onParsingFlow.bind(route),
-          onAfterParsingFlow.bind(route)
+          onAfterParsingFlow.bind(route),
+          onBeforeValidationFlow.bind(route),
+          onValidationFlow.bind(route),
+          onAfterValidationFlow.bind(route)
         ],
         e => {
           if (e) {
