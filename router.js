@@ -17,10 +17,12 @@ const {
   onBeforeParsingFlow,
   onAfterParsingFlow,
   onBeforeValidationFlow,
-  onAfterValidationFlow
+  onAfterValidationFlow,
+  onBeforeHandlerFlow,
+  onAfterHandlerFlow
 } = require('./hooks')
 
-const { Route } = require('./route')
+const { Route, onHandlerFlow } = require('./route')
 const { RouteExistsError } = require('./errors')
 const { initRequest } = require('./request')
 const { initReply } = require('./reply')
@@ -53,7 +55,7 @@ function registerRouteFlow (next) {
     return next(new RouteExistsError(url))
   }
 
-  $log.info(`route: ${url}`)
+  $log.debug(`route:${method} ${url}`)
   router.add(method, url, this)
   next()
 }
@@ -62,7 +64,7 @@ function requestComing (req, rep) {
   const { pathname, query } = parseUrl(req.url)
   const findResult = router.find(req.method, pathname)
   if (!(findResult[0] instanceof Route)) {
-    return rep.writeHead(404).end('Not Found')
+    return rep.writeHead(404).end('404 Not Found')
   }
 
   const parentRoute = findResult[0]
@@ -74,6 +76,13 @@ function requestComing (req, rep) {
   const route = Object.create(parentRoute)
   const { $smallify } = route
 
+  function onCatch (e) {
+    if (!e) return
+
+    rep.writeHead(e.statusCode || 400).end(e.message || '')
+    throwError(this, e)
+  }
+
   rawBody
     .call(route, req)
     .then(body => {
@@ -81,7 +90,7 @@ function requestComing (req, rep) {
       const smallifyRep = Object.create($smallify[kSmallifyReply])
 
       initRequest.call(smallifyReq, req, params, query, body)
-      initReply.call(smallifyRep)
+      initReply.call(smallifyRep, rep)
 
       route[kRouteParent] = parentRoute
       route[kRouteRequest] = smallifyReq
@@ -98,20 +107,15 @@ function requestComing (req, rep) {
           onAfterParsingFlow.bind(route),
           onBeforeValidationFlow.bind(route),
           onValidationFlow.bind(route),
-          onAfterValidationFlow.bind(route)
+          onAfterValidationFlow.bind(route),
+          onBeforeHandlerFlow.bind(route),
+          onHandlerFlow.bind(route),
+          onAfterHandlerFlow.bind(route)
         ],
-        e => {
-          if (e) {
-            throwError($smallify, e)
-          }
-        }
+        onCatch.bind($smallify)
       )
-
-      rep.end('is OK asda')
     })
-    .catch(err => {
-      throwError($smallify, err)
-    })
+    .catch(onCatch.bind($smallify))
 }
 
 module.exports = {

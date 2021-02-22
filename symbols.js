@@ -35,6 +35,11 @@ module.exports = {
 
   kReplyRoute: Symbol('reply.route'),
   kReplyDecorates: Symbol('reply.decorates'),
+  kReplyRaw: Symbol('reply.raw'),
+  kReplySent: Symbol('reply.sent'),
+  kReplyHeaders: Symbol('reply.headers'),
+  kReplyHasStatusCode: Symbol('reply.has.status.code'),
+  kReplyPayload: Symbol('reply.payload'),
 
   kValidationParams: Symbol('validation.params'),
   kValidationQuery: Symbol('validation.query'),

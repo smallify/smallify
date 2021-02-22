@@ -60,9 +60,8 @@ function attachAvvio () {
 
   $avvio._readyQ.unshift(async () => {
     $avvio._readyQ.pause()
-    $log.info('register routes')
+    $log.debug('register routes')
     await activeQueue.call(this.$root, kQueueRoutes)
-    // await activeQueue.call(this.$root, kQueueInjects)
     $avvio._readyQ.resume()
   })
 }

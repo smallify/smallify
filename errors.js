@@ -38,6 +38,20 @@ const ContentTypeParserError = SmallifyError.subclass(
   }
 )
 
+const ReplyAlreadySentError = SmallifyError.subclass(
+  'ReplyAlreadySentError',
+  function () {
+    this.message = 'Reply was already sent.'
+  }
+)
+
+const InvalidStatusCodeError = SmallifyError.subclass(
+  'InvalidStatusCodeError',
+  function (code) {
+    this.message = `Called reply with an invalid status code: ${code}`
+  }
+)
+
 module.exports = {
   SmallifyError,
   DecorateExistsError,
@@ -45,5 +59,7 @@ module.exports = {
   HookCallbackError,
   RouteExistsError,
   PluginVersioMismatchError,
-  ContentTypeParserError
+  ContentTypeParserError,
+  ReplyAlreadySentError,
+  InvalidStatusCodeError
 }

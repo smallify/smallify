@@ -123,7 +123,9 @@ function initHooks () {
     onBeforeParsing: [],
     onAfterParsing: [],
     onBeforeValidation: [],
-    onAfterValidation: []
+    onAfterValidation: [],
+    onBeforeHandler: [],
+    onAfterHandler: []
   }
 }
 
@@ -167,25 +169,7 @@ function onRequestFlow (next) {
   this[kRouteSpan] = now
 
   generalLifecycle('onRequest').call(this, next)
-
-  // doRequestLifecycle.call(this, 'onRequest', next)
 }
-
-// function onBeforeParsingFlow (next) {
-//   doRequestLifecycle.call(this, 'onBeforeParsing', next)
-// }
-
-// function onAfterParsingFlow (next) {
-//   doRequestLifecycle.call(this, 'onAfterParsing', next)
-// }
-
-// function onBeforeValidationFlow (next) {
-//   doRequestLifecycle.call(this, 'onBeforeValidation', next)
-// }
-
-// function onAfterValidationFlow (next) {
-//   doRequestLifecycle.call(this, 'onAfterValidation', next)
-// }
 
 module.exports = {
   initHooks,
@@ -197,5 +181,7 @@ module.exports = {
   onBeforeParsingFlow: generalLifecycle('onBeforeParsing'),
   onAfterParsingFlow: generalLifecycle('onAfterParsing'),
   onBeforeValidationFlow: generalLifecycle('onBeforeValidation'),
-  onAfterValidationFlow: generalLifecycle('onAfterValidation')
+  onAfterValidationFlow: generalLifecycle('onAfterValidation'),
+  onBeforeHandlerFlow: generalLifecycle('onBeforeHandler'),
+  onAfterHandlerFlow: generalLifecycle('onAfterHandler')
 }

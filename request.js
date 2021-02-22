@@ -2,52 +2,39 @@ const queryString = require('querystring')
 
 const { kRequestRaw, kRequestDecorates } = require('./symbols')
 
-function Request () {
-  this[kRequestDecorates] = []
-}
-
-Object.defineProperties(Request.prototype, {
-  raw: {
-    get () {
-      return this[kRequestRaw]
-    }
-  },
-  url: {
-    get () {
-      return this.raw.url
-    }
-  },
-  method: {
-    get () {
-      return this.raw.method
-    }
-  },
-  socket: {
-    get () {
-      return this.raw.socket
-    }
-  },
-  headers: {
-    get () {
-      return this.raw.headers
-    }
-  },
-  ip: {
-    get () {
-      return this.socket.remoteAddress
-    }
-  },
-  protocol: {
-    get () {
-      return this.socket.encrypted ? 'https' : 'http'
-    }
-  },
-  hostname: {
-    get () {
-      return this.headers.host || this.headers[':authority']
-    }
+class Request {
+  constructor () {
+    this[kRequestDecorates] = []
   }
-})
+
+  get raw () {
+    return this[kRequestRaw]
+  }
+
+  get headers () {
+    return this.raw.headers
+  }
+
+  get socket () {
+    return this.raw.socket
+  }
+
+  get ip () {
+    return this.socket.remoteAddress
+  }
+
+  get protocol () {
+    return 'http' // this.socket.encrypted ? 'https' :
+  }
+
+  get method () {
+    return this.raw.method
+  }
+
+  get url () {
+    return this.raw.url
+  }
+}
 
 function initRequest (raw, params, query, body) {
   params = params || {}
