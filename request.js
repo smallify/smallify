@@ -1,10 +1,28 @@
 const queryString = require('querystring')
 
-const { kRequestRaw, kRequestDecorates } = require('./symbols')
+const {
+  kRequestRaw,
+  kRequestDecorates,
+  kRequestQuery,
+  kRequestParams,
+  kRequestBody
+} = require('./symbols')
 
 class Request {
   constructor () {
     this[kRequestDecorates] = []
+  }
+
+  get query () {
+    return this[kRequestQuery]
+  }
+
+  get params () {
+    return this[kRequestParams]
+  }
+
+  get body () {
+    return this[kRequestBody]
   }
 
   get raw () {
@@ -41,13 +59,13 @@ function initRequest (raw, params, query, body) {
   query = queryString.parse(query) || {}
 
   this[kRequestRaw] = raw
-  this.params = params || {}
-  this.query = {}
+  this[kRequestQuery] = {}
+  this[kRequestParams] = params || {}
+  this[kRequestBody] = body
+
   for (const k in query) {
     this.query[k] = query[k]
   }
-
-  this.body = body
 }
 
 module.exports = {

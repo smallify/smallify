@@ -18,6 +18,7 @@ const { initSmallifyProperties } = require('./properties')
 const { attachAvvio, initQueue, addRoute } = require('./queue')
 const { attachHooks, initHooks } = require('./hooks')
 const { attachParser, initParser } = require('./parser')
+const { attachSerializer, initSerializer } = require('./serializer')
 const { attachValidation } = require('./validation')
 
 const smallifyOptions = require('./options')
@@ -60,11 +61,13 @@ function Smallify (opts) {
   initSmallifyDecorates.call(this)
 
   initParser.call(this)
+  initSerializer.call(this)
   initHooks.call(this)
   initQueue.call(this)
 
   attachParser.call(this)
   attachValidation.call(this)
+  attachSerializer.call(this)
   attachHooks.call(this)
   attachAvvio.call(this)
 

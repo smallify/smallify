@@ -1,8 +1,8 @@
 const {
   kSmallifyParserDict,
   kRouteRequest,
-  kRouteReply,
-  kSmallifyParent
+  kSmallifyParent,
+  kRequestBody
 } = require('./symbols')
 
 const { throwError } = require('./hooks')
@@ -70,18 +70,16 @@ function rawBody (req) {
   })
 }
 
-function applicationJson (req, rep) {
+function applicationJson (req) {
   return new Promise((resolve, reject) => {
     const body = req.body.toString('utf-8')
 
     if (body === '' || !body) {
-      req.body = {}
-      return resolve()
+      return resolve({})
     }
 
     try {
-      req.body = secureJson.parse(body)
-      return resolve()
+      return resolve(secureJson.parse(body))
     } catch (e) {
       e.statusCode = 400
       return reject(e)
@@ -89,9 +87,8 @@ function applicationJson (req, rep) {
   })
 }
 
-function textPlain (req, rep) {
-  const body = req.body.toString('utf-8')
-  req.body = body
+function textPlain (req, done) {
+  return done(req.body.toString('utf-8'))
 }
 
 function addContentTypeParser (contentType, parserFn) {
@@ -147,19 +144,31 @@ function runParser (contentType, route, done) {
     }
   }
 
+  const parser = parserDict[contentType]
+  const req = route[kRouteRequest]
+
+  let isSetBody = false
+  function parseDone (err, body) {
+    if (isSetBody) {
+      return
+    }
+    isSetBody = true
+
+    if (err) {
+      return done(err)
+    }
+    req[kRequestBody] = body
+    done()
+  }
+
   try {
-    const parser = parserDict[contentType]
-    const req = route[kRouteRequest]
-    const rep = route[kRouteReply]
-    const pLike = parser.call(route, req, rep)
+    const pLike = parser.call(route, req, parseDone)
 
     if (pLike && typeof pLike.then === 'function') {
-      pLike.then(() => done()).catch(e => done(e))
-    } else {
-      done()
+      pLike.then(body => parseDone(null, body)).catch(e => parseDone(e))
     }
   } catch (e) {
-    done(e)
+    parseDone(e)
   }
 }
 

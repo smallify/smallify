@@ -4,7 +4,8 @@ const {
   kReplySent,
   kReplyHeaders,
   kReplyHasStatusCode,
-  kReplyPayload
+  kReplyPayload,
+  kReplyAllowSend
 } = require('./symbols')
 
 const { ReplyAlreadySentError, InvalidStatusCodeError } = require('./errors')
@@ -136,21 +137,46 @@ class Reply {
     return this
   }
 
-  send (data) {
+  send (payload) {
     if (this.sent) {
       throw new ReplyAlreadySentError()
     }
 
-    // const contentType = this.getHeader('content-type')
-  }
+    const allowSend = this[kReplyAllowSend]
+    if (!allowSend) return this
 
-  then (fullfilled, rejected) {}
+    const contentTypeKey = 'content-type'
+    const contentType = this.getHeader(contentTypeKey)
+    const hasContentType = contentType !== undefined
+
+    if (Buffer.isBuffer(payload) || typeof payload.pipe === 'function') {
+      if (!hasContentType) {
+        this.header(contentTypeKey, 'application/octet-stream')
+      }
+    }
+
+    if (typeof payload === 'string') {
+      if (!hasContentType) {
+        this.header(contentTypeKey, 'text/plain')
+      }
+    }
+
+    if (typeof payload === 'object') {
+      if (!hasContentType) {
+        this.header(contentTypeKey, 'application/json')
+      }
+    }
+
+    this[kReplyPayload] = payload
+    return this
+  }
 }
 
 function initReply (raw) {
   this[kReplyRaw] = raw
   this[kReplySent] = false
   this[kReplyHasStatusCode] = false
+  this[kReplyAllowSend] = false
   this[kReplyHeaders] = {}
 }
 

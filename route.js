@@ -1,4 +1,4 @@
-const { kRouteRequest, kRouteReply } = require('./symbols')
+const { kRouteRequest, kRouteReply, kReplyAllowSend } = require('./symbols')
 
 function Route (opts) {
   for (const k in opts) {
@@ -10,15 +10,22 @@ function onHandlerFlow (next) {
   const { handler } = this
   const req = this[kRouteRequest]
   const rep = this[kRouteReply]
+
+  function _done (e) {
+    rep[kReplyAllowSend] = false
+    next(e)
+  }
+
   try {
+    rep[kReplyAllowSend] = true
     const pLike = handler.call(this, req, rep)
     if (pLike && typeof pLike.then === 'function') {
-      pLike.then(() => next()).catch(e => next(e))
+      pLike.then(() => _done()).catch(e => _done(e))
     } else {
-      next()
+      _done()
     }
   } catch (e) {
-    next(e)
+    _done(e)
   }
 }
 

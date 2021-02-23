@@ -17,7 +17,8 @@ module.exports = {
   kSmallifyRequest: Symbol('smallify.request'),
   kSmallifyReply: Symbol('smallify.reply'),
   kSmallifyHooks: Symbol('smallify.hooks'),
-  kSmallifyParserDict: Symbol('smallify.parser.dict'),
+  kSmallifyParserDict: Symbol('smallify.parser'),
+  kSmallifySerializerDict: Symbol('smallify.serializer'),
 
   kServerListening: Symbol('server.listening'),
 
@@ -31,12 +32,16 @@ module.exports = {
 
   kRequestRoute: Symbol('request.route'),
   kRequestRaw: Symbol('request.raw'),
+  kRequestQuery: Symbol('request.query'),
+  kRequestParams: Symbol('request.params'),
+  kRequestBody: Symbol('request.body'),
   kRequestDecorates: Symbol('request.decorates'),
 
   kReplyRoute: Symbol('reply.route'),
   kReplyDecorates: Symbol('reply.decorates'),
   kReplyRaw: Symbol('reply.raw'),
   kReplySent: Symbol('reply.sent'),
+  kReplyAllowSend: Symbol('reply.allow.send'),
   kReplyHeaders: Symbol('reply.headers'),
   kReplyHasStatusCode: Symbol('reply.has.status.code'),
   kReplyPayload: Symbol('reply.payload'),
@@ -44,7 +49,8 @@ module.exports = {
   kValidationParams: Symbol('validation.params'),
   kValidationQuery: Symbol('validation.query'),
   kValidationBody: Symbol('validation.body'),
-  kValidationResponse: Symbol('validation.response'),
+
+  kSerializerPayload: Symbol('serializer.payload'),
 
   kSmallifyPluginMeta: Symbol.for('smallify.plugin.meta')
 }

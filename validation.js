@@ -63,5 +63,7 @@ function onValidationFlow (next) {
 module.exports = {
   onValidationFlow,
   attachValidation,
-  buildAjvErrorsMsg
+  buildAjvErrorsMsg,
+  compileSchema,
+  validateValue
 }

@@ -38,6 +38,13 @@ const ContentTypeParserError = SmallifyError.subclass(
   }
 )
 
+const ContentTypeSerializerError = SmallifyError.subclass(
+  'ContentTypeSerializerError',
+  function (message) {
+    this.message = message
+  }
+)
+
 const ReplyAlreadySentError = SmallifyError.subclass(
   'ReplyAlreadySentError',
   function () {
@@ -61,5 +68,6 @@ module.exports = {
   PluginVersioMismatchError,
   ContentTypeParserError,
   ReplyAlreadySentError,
-  InvalidStatusCodeError
+  InvalidStatusCodeError,
+  ContentTypeSerializerError
 }

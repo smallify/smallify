@@ -125,7 +125,10 @@ function initHooks () {
     onBeforeValidation: [],
     onAfterValidation: [],
     onBeforeHandler: [],
-    onAfterHandler: []
+    onAfterHandler: [],
+    onBeforeSerializer: [],
+    onAfterSerializer: [],
+    onResponse: []
   }
 }
 
@@ -171,6 +174,17 @@ function onRequestFlow (next) {
   generalLifecycle('onRequest').call(this, next)
 }
 
+function onResponseFlow (next) {
+  const now = Date.now()
+  const span = this[kRouteSpan]
+
+  const { $log } = this
+  $log.debug(`request complete(${now}): ${this.url}`)
+  $log.info(`request during(${now - span} ms): ${this.url}`)
+
+  generalLifecycle('onResponse').call(this, next)
+}
+
 module.exports = {
   initHooks,
   attachHooks,
@@ -183,5 +197,8 @@ module.exports = {
   onBeforeValidationFlow: generalLifecycle('onBeforeValidation'),
   onAfterValidationFlow: generalLifecycle('onAfterValidation'),
   onBeforeHandlerFlow: generalLifecycle('onBeforeHandler'),
-  onAfterHandlerFlow: generalLifecycle('onAfterHandler')
+  onAfterHandlerFlow: generalLifecycle('onAfterHandler'),
+  onBeforeSerializerFlow: generalLifecycle('onBeforeSerializer'),
+  onAfterSerializerFlow: generalLifecycle('onAfterSerializer'),
+  onResponseFlow
 }

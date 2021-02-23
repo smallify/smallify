@@ -18,6 +18,7 @@ const { PluginVersioMismatchError } = require('./errors')
 const { initQueue } = require('./queue')
 const { initHooks } = require('./hooks')
 const { initParser } = require('./parser')
+const { initSerializer } = require('./serializer')
 
 const Merge = require('merge')
 const Semver = require('semver')
@@ -69,6 +70,7 @@ function avvioOverride (old, fn, opts) {
 
   initScope.call(ins)
   initParser.call(ins)
+  initSerializer.call(ins)
   initHooks.call(ins)
   initQueue.call(ins)
 

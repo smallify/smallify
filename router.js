@@ -1,5 +1,6 @@
 const TrekRouter = require('trek-router')
 const asyncLib = require('async')
+const eos = require('readable-stream').finished
 
 const {
   kSmallifyRequest,
@@ -8,7 +9,8 @@ const {
   kReplyRoute,
   kRouteParent,
   kRouteRequest,
-  kRouteReply
+  kRouteReply,
+  kReplyHeaders
 } = require('./symbols')
 
 const {
@@ -19,7 +21,10 @@ const {
   onBeforeValidationFlow,
   onAfterValidationFlow,
   onBeforeHandlerFlow,
-  onAfterHandlerFlow
+  onAfterHandlerFlow,
+  onBeforeSerializerFlow,
+  onAfterSerializerFlow,
+  onResponseFlow
 } = require('./hooks')
 
 const { Route, onHandlerFlow } = require('./route')
@@ -28,8 +33,11 @@ const { initRequest } = require('./request')
 const { initReply } = require('./reply')
 const { onParsingFlow, rawBody } = require('./parser')
 const { onValidationFlow } = require('./validation')
+const { onSerializerFlow } = require('./serializer')
 
 const router = new TrekRouter()
+
+function noop () {}
 
 function parseUrl (url) {
   const queryPrefix = url.indexOf('?')
@@ -60,6 +68,79 @@ function registerRouteFlow (next) {
   next()
 }
 
+function sendStream () {
+  const rep = this[kRouteReply]
+  const { $smallify } = this
+  const { raw, payload } = rep
+
+  let sourceOpen = true
+  eos(payload, { readable: true, writable: false }, function (err) {
+    sourceOpen = false
+    if (err) {
+      raw.destroy()
+      throwError($smallify, err)
+    }
+  })
+
+  eos(raw, function (err) {
+    if (err) {
+      if (sourceOpen) {
+        if (payload.destroy) {
+          payload.destroy()
+        } else if (typeof payload.close === 'function') {
+          payload.close(noop)
+        } else if (typeof payload.abort === 'function') {
+          payload.abort()
+        }
+      }
+      throwError($smallify, err)
+    }
+  })
+
+  const headers = rep[kReplyHeaders]
+  for (const key in headers) {
+    raw.setHeader(key, headers[key])
+  }
+
+  payload.pipe(raw)
+}
+
+function sendResponseFlow (next) {
+  const req = this[kRouteRequest]
+  const rep = this[kRouteReply]
+
+  const raw = rep.raw
+  const statusCode = rep.statusCode
+  let payload = rep.payload
+
+  if (typeof payload.pipe === 'function') {
+    sendStream.call(this)
+    return next()
+  }
+
+  if (payload === null || payload === undefined) {
+    if (
+      statusCode >= 200 &&
+      statusCode !== 204 &&
+      statusCode !== 304 &&
+      req.method !== 'HEAD'
+    ) {
+      rep.header('content-length', '0')
+    }
+
+    payload = null
+  }
+
+  if (Buffer.isBuffer(payload) && !rep.hasHeader('content-length')) {
+    rep.header('content-length', Buffer.byteLength(payload))
+  }
+
+  rep.sent = true
+  raw.writeHead(statusCode, rep[kReplyHeaders])
+  raw.end(payload, null, null)
+  return next()
+}
+
 function requestComing (req, rep) {
   const { pathname, query } = parseUrl(req.url)
   const findResult = router.find(req.method, pathname)
@@ -75,20 +156,29 @@ function requestComing (req, rep) {
 
   const route = Object.create(parentRoute)
   const { $smallify } = route
+  const smallifyReq = Object.create($smallify[kSmallifyRequest])
+  const smallifyRep = Object.create($smallify[kSmallifyReply])
 
   function onCatch (e) {
     if (!e) return
 
-    rep.writeHead(e.statusCode || 400).end(e.message || '')
+    smallifyRep.sent = true
+    e.statusCode = e.statusCode || 400
+
+    rep.writeHead(e.statusCode).end(
+      JSON.stringify({
+        statusCode: e.statusCode,
+        code: e.statusCode + '',
+        message: e.message,
+        error: e.message
+      })
+    )
     throwError(this, e)
   }
 
   rawBody
     .call(route, req)
     .then(body => {
-      const smallifyReq = Object.create($smallify[kSmallifyRequest])
-      const smallifyRep = Object.create($smallify[kSmallifyReply])
-
       initRequest.call(smallifyReq, req, params, query, body)
       initReply.call(smallifyRep, rep)
 
@@ -110,7 +200,12 @@ function requestComing (req, rep) {
           onAfterValidationFlow.bind(route),
           onBeforeHandlerFlow.bind(route),
           onHandlerFlow.bind(route),
-          onAfterHandlerFlow.bind(route)
+          onAfterHandlerFlow.bind(route),
+          onBeforeSerializerFlow.bind(route),
+          onSerializerFlow.bind(route),
+          onAfterSerializerFlow.bind(route),
+          onResponseFlow.bind(route),
+          sendResponseFlow.bind(route)
         ],
         onCatch.bind($smallify)
       )
