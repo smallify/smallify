@@ -23,6 +23,7 @@ module.exports = {
   kServerListening: Symbol('server.listening'),
 
   kQueueRoutes: Symbol('queue.routes'),
+  kQueueInjects: Symbol('queue.injects'),
 
   kRouteSmallify: Symbol('route.smallify'),
   kRouteParent: Symbol('route.parent'),

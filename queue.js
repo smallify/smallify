@@ -1,5 +1,6 @@
 const {
   kQueueRoutes,
+  kQueueInjects,
   kRouteSmallify,
   kSmallifyRouterPrefix,
   kSmallifyRoutes,
@@ -8,20 +9,22 @@ const {
 
 const {
   RouteOptionsError,
-  // InjectOptionsError,
+  InjectOptionsError,
   HookCallbackError
 } = require('./errors')
 
+const { Inject } = require('./inject')
 const { Route } = require('./route')
 const { initRouteProperties } = require('./properties')
 const { routeHooks, throwError, onRouteFlow } = require('./hooks')
-const { registerRouteFlow } = require('./router')
+const { registerRouteFlow, requestComing } = require('./router')
 const { isArrow } = require('extra-function')
 const { buildAjvErrorsMsg } = require('./validation')
 
 const FastQ = require('fastq')
 const { default: AJV } = require('ajv')
 const asyncLib = require('async')
+const lightMyRequest = require('light-my-request')
 
 const ajv = new AJV({ useDefaults: true, coerceTypes: true })
 
@@ -55,6 +58,13 @@ function routerWorker (route, done) {
   )
 }
 
+function injectWorker (inject, done) {
+  lightMyRequest(requestComing, inject, (err, res) => {
+    inject.handler(err, res)
+  })
+  done()
+}
+
 function attachAvvio () {
   const { $avvio, $log } = this.$root
 
@@ -62,6 +72,7 @@ function attachAvvio () {
     $avvio._readyQ.pause()
     $log.debug('register routes')
     await activeQueue.call(this.$root, kQueueRoutes)
+    await activeQueue.call(this.$root, kQueueInjects)
     $avvio._readyQ.resume()
   })
 }
@@ -69,6 +80,9 @@ function attachAvvio () {
 function initQueue () {
   this[kQueueRoutes] = FastQ(this, routerWorker, 1)
   this[kQueueRoutes].pause()
+
+  this[kQueueInjects] = FastQ(this, injectWorker, 1)
+  this[kQueueInjects].pause()
 }
 
 function addRoute (opts, handler) {
@@ -133,8 +147,62 @@ function addRoute (opts, handler) {
   this[kQueueRoutes].push(route)
 }
 
+function addInject (opts, handler) {
+  const schema = require('./schemas/inject-options.json')
+  ajv.compile(schema)(opts)
+  if (!ajv.validate(schema, opts)) {
+    const e = new InjectOptionsError(buildAjvErrorsMsg(ajv.errors))
+    throwError(this, e)
+    return this
+  }
+
+  const inject = new Inject(opts)
+
+  if (typeof inject.handler !== 'function') {
+    delete inject.handler
+  }
+
+  if (!inject.handler && typeof handler === 'function') {
+    inject.handler = handler
+  }
+
+  let returned = this
+  if (!inject.handler) {
+    returned = new Promise((resolve, reject) => {
+      function _handler (err, data) {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(data)
+        }
+      }
+
+      inject.handler = _handler
+    })
+  }
+
+  if (isArrow(inject.handler)) {
+    const e = new InjectOptionsError(
+      `handler for ${inject.url} inject not allow arrow function`
+    )
+    throwError(this, e)
+    return returned
+  }
+
+  const prefix = this[kSmallifyRouterPrefix]
+
+  if (inject.$usePrefix && prefix && prefix !== '') {
+    inject.url = `${prefix}${inject.url}`
+  }
+
+  inject.handler = inject.handler.bind(inject)
+  this[kQueueInjects].push(inject)
+  return returned
+}
+
 module.exports = {
   initQueue,
   attachAvvio,
-  addRoute
+  addRoute,
+  addInject
 }

@@ -9,7 +9,18 @@ const {
   kRouteSpan
 } = require('./symbols')
 
-const routeHooks = []
+const routeHooks = [
+  'onRequest',
+  'onBeforeParsing',
+  'onAfterParsing',
+  'onBeforeValidation',
+  'onAfterValidation',
+  'onBeforeHandler',
+  'onAfterHandler',
+  'onBeforeSerializer',
+  'onAfterSerializer',
+  'onResponse'
+]
 
 function printError (e) {
   this.$log.error(e)

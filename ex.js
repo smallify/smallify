@@ -22,6 +22,10 @@ smallify.register(
         }
       },
       handler (req, rep) {
+        console.log({
+          query: req.query,
+          body: req.body
+        })
         rep.send({ from: 'smallify', prop1: 'this is prop1' })
       }
     })
@@ -61,13 +65,27 @@ smallify.register(
 //   this.$log.info('do onBeforeSerializer hook')
 // })
 
-smallify.addHook('onAfterSerializer', function (req, rep) {
-  this.$log.info('do onAfterSerializer hook')
-  const e = new Error('message from onAfterSerializer')
-  e.statusCode = 413
-  throw e
-})
+// smallify.addHook('onAfterSerializer', function (req, rep) {
+//   this.$log.info('do onAfterSerializer hook')
+// })
 
-smallify.ready(e => {
+smallify.ready(async e => {
   e && smallify.$log.error(e.message)
+  smallify.inject({
+    url: '/math/add',
+    method: 'POST',
+    query: {
+      aaa: '13213',
+      bbb: 'this is bbbb'
+    },
+    body: {
+      bstr: 'bstr'
+    },
+    handler (err, res) {
+      console.log({
+        err,
+        res: res.json()
+      })
+    }
+  })
 })

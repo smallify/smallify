@@ -15,7 +15,7 @@ const {
 
 const { DecorateExistsError } = require('./errors')
 const { initSmallifyProperties } = require('./properties')
-const { attachAvvio, initQueue, addRoute } = require('./queue')
+const { attachAvvio, initQueue, addRoute, addInject } = require('./queue')
 const { attachHooks, initHooks } = require('./hooks')
 const { attachParser, initParser } = require('./parser')
 const { attachSerializer, initSerializer } = require('./serializer')
@@ -127,6 +127,10 @@ Smallify.prototype.hasReplyDecorator = function (prop) {
 Smallify.prototype.route = function (opts, handler) {
   addRoute.call(this, opts || {}, handler)
   return this
+}
+
+Smallify.prototype.inject = function (opts, handler) {
+  return addInject.call(this, opts || {}, handler)
 }
 
 module.exports = Smallify

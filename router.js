@@ -28,7 +28,7 @@ const {
 } = require('./hooks')
 
 const { Route, onHandlerFlow } = require('./route')
-const { RouteExistsError } = require('./errors')
+const { RouteExistsError, ReplyAlreadySentError } = require('./errors')
 const { initRequest } = require('./request')
 const { initReply } = require('./reply')
 const { onParsingFlow, rawBody } = require('./parser')
@@ -108,6 +108,11 @@ function sendStream () {
 function sendResponseFlow (next) {
   const req = this[kRouteRequest]
   const rep = this[kRouteReply]
+
+  if (rep.sent) {
+    const err = new ReplyAlreadySentError()
+    return next(err)
+  }
 
   const raw = rep.raw
   const statusCode = rep.statusCode

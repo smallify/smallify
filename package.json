@@ -42,6 +42,7 @@
     "extra-function": "^0.0.51",
     "fast-json-stringify": "^2.4.2",
     "fastq": "^1.10.1",
+    "light-my-request": "^4.4.1",
     "merge": "^2.1.0",
     "pino": "^6.11.1",
     "secure-json-parse": "^2.3.1",

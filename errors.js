@@ -10,6 +10,7 @@ const DecorateExistsError = SmallifyError.subclass(
 )
 
 const RouteOptionsError = SmallifyError.subclass('RouteOptionsError')
+const InjectOptionsError = SmallifyError.subclass('InjectOptionsError')
 
 const HookCallbackError = SmallifyError.subclass(
   'HookCallbackError',
@@ -63,6 +64,7 @@ module.exports = {
   SmallifyError,
   DecorateExistsError,
   RouteOptionsError,
+  InjectOptionsError,
   HookCallbackError,
   RouteExistsError,
   PluginVersioMismatchError,
