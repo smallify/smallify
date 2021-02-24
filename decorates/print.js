@@ -3,7 +3,8 @@ const {
   kSmallifyRoutes,
   kSmallifyDecorates,
   kSmallifyRequest,
-  kSmallifyReply
+  kSmallifyReply,
+  kSmallifyParserDict
 } = require('../symbols')
 
 const tab = 4
@@ -45,6 +46,8 @@ function printChild (level, child) {
     Object.keys(child[kSmallifyReply]),
     'reply decorates'
   )
+
+  printArrays(level, child, Object.keys(child[kSmallifyParserDict]), 'parser')
 
   printArrays(level, child, child[kSmallifyRoutes], 'routes')
 

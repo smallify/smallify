@@ -118,9 +118,26 @@ function addContentTypeParser (contentType, parserFn) {
   return this
 }
 
+function hasContentTypeParser (contentType) {
+  const parserDict = this[kSmallifyParserDict]
+
+  if (!(contentType in parserDict)) {
+    const parent = this[kSmallifyParent]
+
+    if (parent) {
+      return hasContentTypeParser.call(parent, contentType)
+    } else {
+      return false
+    }
+  }
+
+  return true
+}
+
 function initParser () {
   this[kSmallifyParserDict] = {}
   this.addContentTypeParser = addContentTypeParser.bind(this)
+  this.hasContentTypeParser = hasContentTypeParser.bind(this)
 }
 
 function attachParser () {
@@ -147,12 +164,12 @@ function runParser (contentType, route, done) {
   const parser = parserDict[contentType]
   const req = route[kRouteRequest]
 
-  let isSetBody = false
+  let hasDone = false
   function parseDone (err, body) {
-    if (isSetBody) {
+    if (hasDone) {
       return
     }
-    isSetBody = true
+    hasDone = true
 
     if (err) {
       return done(err)
