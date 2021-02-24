@@ -45,6 +45,7 @@
     "light-my-request": "^4.4.1",
     "merge": "^2.1.0",
     "pino": "^6.11.1",
+    "readable-stream": "^3.6.0",
     "secure-json-parse": "^2.3.1",
     "semver": "^7.3.4",
     "super-error": "^2.4.0",

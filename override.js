@@ -8,9 +8,6 @@ const {
   kSmallifyRequest,
   kSmallifyReply,
 
-  kRequestDecorates,
-  kReplyDecorates,
-
   kSmallifyPluginMeta
 } = require('./symbols')
 
@@ -30,9 +27,6 @@ function initScope () {
     // root scope parent==null
     const nReq = Object.create(parent[kSmallifyRequest])
     const nRep = Object.create(parent[kSmallifyReply])
-
-    nReq[kRequestDecorates] = []
-    nRep[kReplyDecorates] = []
 
     this[kSmallifyRequest] = nReq
     this[kSmallifyReply] = nRep

@@ -8,12 +8,9 @@ const {
   kSmallifyDecorates,
   kSmallifyParent,
   kSmallifyRequest,
-  kSmallifyReply,
-  kRequestDecorates,
-  kReplyDecorates
+  kSmallifyReply
 } = require('./symbols')
 
-const { DecorateExistsError } = require('./errors')
 const { initSmallifyProperties } = require('./properties')
 const { attachAvvio, initQueue, addRoute, addInject } = require('./queue')
 const { attachHooks, initHooks } = require('./hooks')
@@ -75,10 +72,6 @@ function Smallify (opts) {
 }
 
 Smallify.prototype.decorate = function (prop, value) {
-  if (prop in this) {
-    throw new DecorateExistsError()
-  }
-
   this[prop] = value
   this[kSmallifyDecorates].push(prop)
   return this
@@ -91,12 +84,7 @@ Smallify.prototype.hasDecorator = function (prop) {
 Smallify.prototype.decorateRequest = function (prop, value) {
   const req = this[kSmallifyRequest]
 
-  if (prop in req) {
-    throw new DecorateExistsError()
-  }
-
   req[prop] = value
-  req[kRequestDecorates].push(prop)
   return this
 }
 
@@ -109,12 +97,7 @@ Smallify.prototype.hasRequestDecorator = function (prop) {
 Smallify.prototype.decorateReply = function (prop, value) {
   const rep = this[kSmallifyReply]
 
-  if (prop in rep) {
-    throw new DecorateExistsError()
-  }
-
   rep[prop] = value
-  rep[kReplyDecorates].push(prop)
   return this
 }
 

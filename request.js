@@ -2,17 +2,12 @@ const queryString = require('querystring')
 
 const {
   kRequestRaw,
-  kRequestDecorates,
   kRequestQuery,
   kRequestParams,
   kRequestBody
 } = require('./symbols')
 
 class Request {
-  constructor () {
-    this[kRequestDecorates] = []
-  }
-
   get query () {
     return this[kRequestQuery]
   }

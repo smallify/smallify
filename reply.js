@@ -1,5 +1,4 @@
 const {
-  kReplyDecorates,
   kReplyRaw,
   kReplySent,
   kReplyHeaders,
@@ -12,7 +11,6 @@ const { ReplyAlreadySentError, InvalidStatusCodeError } = require('./errors')
 
 class Reply {
   constructor () {
-    this[kReplyDecorates] = []
     this[kReplyHeaders] = {}
   }
 

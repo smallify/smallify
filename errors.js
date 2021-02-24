@@ -1,14 +1,6 @@
 const superError = require('super-error')
 
 const SmallifyError = superError.subclass('SmallifyError')
-
-const DecorateExistsError = SmallifyError.subclass(
-  'DecorateExistsError',
-  function () {
-    this.message = 'Decoration has been already added'
-  }
-)
-
 const RouteOptionsError = SmallifyError.subclass('RouteOptionsError')
 const InjectOptionsError = SmallifyError.subclass('InjectOptionsError')
 
@@ -62,7 +54,6 @@ const InvalidStatusCodeError = SmallifyError.subclass(
 
 module.exports = {
   SmallifyError,
-  DecorateExistsError,
   RouteOptionsError,
   InjectOptionsError,
   HookCallbackError,

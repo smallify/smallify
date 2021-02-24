@@ -36,10 +36,8 @@ module.exports = {
   kRequestQuery: Symbol('request.query'),
   kRequestParams: Symbol('request.params'),
   kRequestBody: Symbol('request.body'),
-  kRequestDecorates: Symbol('request.decorates'),
 
   kReplyRoute: Symbol('reply.route'),
-  kReplyDecorates: Symbol('reply.decorates'),
   kReplyRaw: Symbol('reply.raw'),
   kReplySent: Symbol('reply.sent'),
   kReplyAllowSend: Symbol('reply.allow.send'),
