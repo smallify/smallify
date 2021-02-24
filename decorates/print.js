@@ -5,7 +5,8 @@ const {
   kSmallifyRequest,
   kSmallifyReply,
   kSmallifyParserDict,
-  kSmallifySerializerDict
+  kSmallifySerializerDict,
+  kSmallifyRouterPrefix
 } = require('../symbols')
 
 const tab = 4
@@ -23,6 +24,19 @@ function printArrays (level, child, items, name) {
       const uLine = `${uPad}${tabPrefix}${url}`
       child.$log.info(uLine)
     }
+  }
+}
+
+function printPrefix (level, child) {
+  const prefix = child[kSmallifyRouterPrefix]
+  if (prefix && prefix !== '') {
+    const pPad = ''.padEnd((level + 1) * tab, tabPad)
+    const pLine = `${pPad}${tabPrefix}prefix`
+    child.$log.info(pLine)
+
+    const uPad = ''.padEnd(pPad.length + tab, tabPad)
+    const uLine = `${uPad}${tabPrefix}${prefix}`
+    child.$log.info(uLine)
   }
 }
 
@@ -56,9 +70,8 @@ function printChild (level, child) {
     'serializer'
   )
 
+  printPrefix(level, child)
   printArrays(level, child, child[kSmallifyRoutes], 'routes')
-
-  // printPrefix(level, child)
 
   const children = child[kSmallifyChildren]
   children.forEach(child => {
