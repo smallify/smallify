@@ -71,6 +71,22 @@ function addContentTypeSerializer (contentType, serializerFn) {
   return this
 }
 
+function hasContentTypeSerializer (contentType) {
+  const serializerDict = this[kSmallifySerializerDict]
+
+  if (!(contentType in serializerDict)) {
+    const parent = this[kSmallifyParent]
+
+    if (parent) {
+      return hasContentTypeSerializer.call(parent, contentType)
+    } else {
+      return false
+    }
+  }
+
+  return true
+}
+
 function runSerializer (contentType, route, done) {
   const serializerDict = this[kSmallifySerializerDict]
 
@@ -87,12 +103,12 @@ function runSerializer (contentType, route, done) {
   const serializer = serializerDict[contentType]
   const rep = route[kRouteReply]
 
-  let isSerialize = false
+  let hasDone = false
   function serializeDone (err, payload) {
-    if (isSerialize) {
+    if (hasDone) {
       return
     }
-    isSerialize = true
+    hasDone = true
 
     if (err) {
       return done(err)
@@ -117,6 +133,7 @@ function runSerializer (contentType, route, done) {
 function initSerializer () {
   this[kSmallifySerializerDict] = {}
   this.addContentTypeSerializer = addContentTypeSerializer.bind(this)
+  this.hasContentTypeSerializer = hasContentTypeSerializer.bind(this)
 }
 
 function onSerializerFlow (next) {
