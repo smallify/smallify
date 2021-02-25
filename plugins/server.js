@@ -1,4 +1,4 @@
-const http = require('http')
+const { Server } = require('http')
 
 const { kSmallifyServer } = require('../symbols')
 const { requestComing } = require('../router')
@@ -22,23 +22,18 @@ module.exports = function (smallify, opts, done) {
   const { $log } = smallify
   const { keepAliveTimeout, connectionTimeout, port, address } = opts
 
-  const server = http.createServer((req, rep) => {
-    requestComing(req, rep)
-  })
-
+  const server = new Server()
   server.keepAliveTimeout = keepAliveTimeout
   server.setTimeout(connectionTimeout)
   this[kSmallifyServer] = server
 
-  function onError (err) {
-    done(err)
-  }
+  server.once('error', done)
+  server.on('request', requestComing)
 
-  server.once('error', onError)
   server.listen(port, address, () => {
     const address = ensureServerAddress.call(this)
     $log.info('server listening at ' + address)
-    server.removeListener('error', onError)
+    server.removeListener('error', done)
     done()
   })
 }

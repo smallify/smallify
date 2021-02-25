@@ -51,9 +51,9 @@ function onValidationFlow (next) {
   if (!schema) return next()
 
   try {
-    validateValue.call(this, this[kValidationParams], req.params)
-    validateValue.call(this, this[kValidationQuery], req.query)
-    validateValue.call(this, this[kValidationBody], req.body)
+    validateValue(this[kValidationParams], req.params)
+    validateValue(this[kValidationQuery], req.query)
+    validateValue(this[kValidationBody], req.body)
     next()
   } catch (e) {
     next(e)
