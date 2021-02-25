@@ -40,9 +40,9 @@ function attachSerializer () {
     })
   })
 
-  this.addHook('onAfterSerializer', function (req, rep) {
-    rep.header('X-Powered-By', 'smallify')
-  })
+  // this.addHook('onAfterSerializer', function (req, rep) {
+  //   rep.header('X-Powered-By', 'smallify')
+  // })
 
   this.addContentTypeSerializer('application/json', applicationJson)
   this.addContentTypeSerializer('text/plain', textPlain)
@@ -91,13 +91,13 @@ function runSerializer (contentType, route, done) {
   const serializerDict = this[kSmallifySerializerDict]
 
   if (!(contentType in serializerDict)) {
-    const parent = this[kSmallifyParent]
+    // const parent = this[kSmallifyParent]
 
-    if (parent) {
-      return runSerializer.call(parent, contentType, route, done)
-    } else {
-      return done()
-    }
+    // if (parent) {
+    //   return runSerializer.call(parent, contentType, route, done)
+    // } else {
+    return done()
+    // }
   }
 
   const serializer = serializerDict[contentType]

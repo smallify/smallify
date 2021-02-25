@@ -27,10 +27,10 @@ smallify.register(
       ins1.hasContentTypeSerializer('serializer/ins1'),
       'ins1 not serializer/ins1'
     )
-    assert(
-      !ins1.hasContentTypeSerializer('serializer/ins2'),
-      'ins1 has serializer/ins2'
-    )
+    // assert(
+    //   ins1.hasContentTypeSerializer('serializer/ins2'),
+    //   'ins1 not serializer/ins2'
+    // )
   },
   {
     name: 'ins1'
@@ -52,8 +52,8 @@ smallify.register(
       'ins1 not serializer/ins2'
     )
     assert(
-      !ins2.hasContentTypeSerializer('serializer/ins1'),
-      'ins1 has serializer/ins1'
+      ins2.hasContentTypeSerializer('serializer/ins1'),
+      'ins1 not serializer/ins1'
     )
   },
   {

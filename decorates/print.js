@@ -62,13 +62,15 @@ function printChild (level, child) {
     'reply decorates'
   )
 
-  printArrays(level, child, Object.keys(child[kSmallifyParserDict]), 'parser')
-  printArrays(
-    level,
-    child,
-    Object.keys(child[kSmallifySerializerDict]),
-    'serializer'
-  )
+  if (level === 0) {
+    printArrays(level, child, Object.keys(child[kSmallifyParserDict]), 'parser')
+    printArrays(
+      level,
+      child,
+      Object.keys(child[kSmallifySerializerDict]),
+      'serializer'
+    )
+  }
 
   printPrefix(level, child)
   printArrays(level, child, child[kSmallifyRoutes], 'routes')

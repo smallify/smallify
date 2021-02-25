@@ -149,16 +149,14 @@ function runParser (contentType, route, done) {
   const parserDict = this[kSmallifyParserDict]
 
   if (!(contentType in parserDict)) {
-    const parent = this[kSmallifyParent]
+    // const parent = this[kSmallifyParent]
 
-    if (parent) {
-      return runParser.call(parent, contentType, route, done)
-    } else {
-      const err = new ContentTypeParserError(
-        `invalid media type: ${contentType}`
-      )
-      return done(err)
-    }
+    // if (parent) {
+    //   return runParser.call(parent, contentType, route, done)
+    // } else {
+    const err = new ContentTypeParserError(`invalid media type: ${contentType}`)
+    return done(err)
+    // }
   }
 
   const parser = parserDict[contentType]
