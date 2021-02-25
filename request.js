@@ -49,14 +49,14 @@ class Request {
   }
 }
 
-function initRequest (raw, params, query, body) {
+function initRequest (raw, params, query) {
   params = params || {}
   query = queryString.parse(query) || {}
 
   this[kRequestRaw] = raw
   this[kRequestQuery] = {}
   this[kRequestParams] = params || {}
-  this[kRequestBody] = body
+  // this[kRequestBody] = body
 
   for (const k in query) {
     this.query[k] = query[k]

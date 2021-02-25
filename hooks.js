@@ -1,4 +1,4 @@
-const asyncLib = require('async')
+const flows = require('./flows')
 const { isArrow } = require('extra-function')
 const { HookCallbackError } = require('./errors')
 const {
@@ -11,14 +11,9 @@ const {
 
 const routeHooks = [
   'onRequest',
-  'onBeforeParsing',
-  'onAfterParsing',
   'onBeforeValidation',
-  'onAfterValidation',
   'onBeforeHandler',
-  'onAfterHandler',
   'onBeforeSerializer',
-  'onAfterSerializer',
   'onResponse'
 ]
 
@@ -34,7 +29,7 @@ function addHook (name, fn) {
 
   if (isArrow(fn)) {
     const e = new HookCallbackError()
-    return runHooks('onError', this, null, e)
+    return runHooks.call(this, 'onError', this, null, e)
   }
 
   if (typeof fn !== 'function') {
@@ -67,7 +62,7 @@ function runHooks (name, ins, done, ...args) {
     }
 
     let doCount = 0
-    asyncLib.whilst(
+    flows.whilst(
       function (next) {
         next(null, doCount < doHooks.length)
       },
@@ -104,24 +99,6 @@ function runHooks (name, ins, done, ...args) {
   }
 }
 
-function runHooksAsync (name, ins, ...args) {
-  return new Promise((resolve, reject) => {
-    runHooks.call(
-      this,
-      name,
-      ins,
-      err => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve()
-        }
-      },
-      ...args
-    )
-  })
-}
-
 function initHooks () {
   this.addHook = addHook.bind(this)
   this[kSmallifyHooks] = {
@@ -131,21 +108,16 @@ function initHooks () {
     onRoute: [],
 
     onRequest: [],
-    onBeforeParsing: [],
-    onAfterParsing: [],
     onBeforeValidation: [],
-    onAfterValidation: [],
     onBeforeHandler: [],
-    onAfterHandler: [],
     onBeforeSerializer: [],
-    onAfterSerializer: [],
     onResponse: []
   }
 }
 
 function attachHooks () {
   this._onClose((ins, done) => {
-    runHooks('onClose', ins, done)
+    runHooks.call(ins, 'onClose', ins, done)
   })
   this.addHook('onError', printError)
 }
@@ -156,10 +128,7 @@ function throwError (ins, e) {
 
 function onRouteFlow (next) {
   const { $smallify } = this
-  runHooksAsync
-    .call($smallify, 'onRoute', $smallify, this)
-    .then(() => next())
-    .catch(e => next(e))
+  runHooks.call($smallify, 'onRoute', $smallify, next, this)
 }
 
 function generalLifecycle (hookName) {
@@ -167,11 +136,7 @@ function generalLifecycle (hookName) {
     const { $smallify } = this
     const req = this[kRouteRequest]
     const rep = this[kRouteReply]
-
-    runHooksAsync
-      .call($smallify, hookName, this, req, rep)
-      .then(() => next())
-      .catch(e => next(e))
+    runHooks.call($smallify, hookName, this, next, req, rep)
   }
 }
 

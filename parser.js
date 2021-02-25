@@ -15,6 +15,7 @@ function rawBody (req) {
     const raw = req
     const body = []
     const limit = this.bodyLimit
+    const route = this
     const contentLength = raw.headers['content-length']
 
     let eLen = NaN
@@ -59,8 +60,9 @@ function rawBody (req) {
       }
 
       const nBody = Buffer.concat(body)
+      route[kRouteRequest][kRequestBody] = nBody
 
-      resolve(nBody)
+      resolve(route)
     }
 
     raw.on('data', onData)
@@ -189,12 +191,12 @@ function runParser (contentType, route, done) {
 
 function onParsingFlow (next) {
   const { method, $smallify } = this
-  const req = this[kRouteRequest]
 
   if (method === 'GET' || method === 'HEAD') {
     return next()
   }
 
+  const req = this[kRouteRequest]
   let contentType = req.headers['content-type']
   const transferEncoding = req.headers['transfer-encoding']
   const contentLength = req.headers['content-length']

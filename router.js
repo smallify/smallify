@@ -1,6 +1,6 @@
 const TrekRouter = require('trek-router')
-const asyncLib = require('async')
 const eos = require('readable-stream').finished
+const flows = require('./flows')
 
 const {
   kSmallifyRequest,
@@ -16,19 +16,14 @@ const {
 const {
   throwError,
   onRequestFlow,
-  onBeforeParsingFlow,
-  onAfterParsingFlow,
   onBeforeValidationFlow,
-  onAfterValidationFlow,
   onBeforeHandlerFlow,
-  onAfterHandlerFlow,
   onBeforeSerializerFlow,
-  onAfterSerializerFlow,
   onResponseFlow
 } = require('./hooks')
 
 const { Route, onHandlerFlow } = require('./route')
-const { RouteExistsError, ReplyAlreadySentError } = require('./errors')
+const { RouteExistsError } = require('./errors')
 const { initRequest } = require('./request')
 const { initReply } = require('./reply')
 const { onParsingFlow, rawBody } = require('./parser')
@@ -110,15 +105,14 @@ function sendResponseFlow (next) {
   const rep = this[kRouteReply]
 
   if (rep.sent) {
-    const err = new ReplyAlreadySentError()
-    return next(err)
+    return next()
   }
 
   const raw = rep.raw
   const statusCode = rep.statusCode
   let payload = rep.payload
 
-  if (typeof payload.pipe === 'function') {
+  if (payload && typeof payload.pipe === 'function') {
     sendStream.call(this)
     return next()
   }
@@ -154,15 +148,25 @@ function requestComing (req, rep) {
   }
 
   const parentRoute = findResult[0]
+  const { $smallify } = parentRoute
   const params = {}
   findResult[1].forEach(pm => {
     params[pm.name] = pm.value
   })
 
   const route = Object.create(parentRoute)
-  const { $smallify } = route
   const smallifyReq = Object.create($smallify[kSmallifyRequest])
   const smallifyRep = Object.create($smallify[kSmallifyReply])
+
+  route[kRouteParent] = parentRoute
+  route[kRouteRequest] = smallifyReq
+  route[kRouteReply] = smallifyRep
+
+  smallifyReq[kRequestRoute] = route
+  smallifyRep[kReplyRoute] = route
+
+  initRequest.call(smallifyReq, req, params, query)
+  initReply.call(smallifyRep, rep)
 
   function onCatch (e) {
     if (!e) return
@@ -183,32 +187,17 @@ function requestComing (req, rep) {
 
   rawBody
     .call(route, req)
-    .then(body => {
-      initRequest.call(smallifyReq, req, params, query, body)
-      initReply.call(smallifyRep, rep)
-
-      route[kRouteParent] = parentRoute
-      route[kRouteRequest] = smallifyReq
-      route[kRouteReply] = smallifyRep
-
-      smallifyReq[kRequestRoute] = route
-      smallifyRep[kReplyRoute] = route
-
-      asyncLib.series(
+    .then(route => {
+      flows.series(
         [
           onRequestFlow.bind(route),
-          onBeforeParsingFlow.bind(route),
           onParsingFlow.bind(route),
-          onAfterParsingFlow.bind(route),
           onBeforeValidationFlow.bind(route),
           onValidationFlow.bind(route),
-          onAfterValidationFlow.bind(route),
           onBeforeHandlerFlow.bind(route),
           onHandlerFlow.bind(route),
-          onAfterHandlerFlow.bind(route),
           onBeforeSerializerFlow.bind(route),
           onSerializerFlow.bind(route),
-          onAfterSerializerFlow.bind(route),
           onResponseFlow.bind(route),
           sendResponseFlow.bind(route)
         ],

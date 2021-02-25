@@ -1,6 +1,6 @@
 const http = require('http')
 
-const { kSmallifyServer, kServerListening } = require('../symbols')
+const { kSmallifyServer } = require('../symbols')
 const { requestComing } = require('../router')
 
 function ensureServerAddress () {
@@ -23,15 +23,11 @@ module.exports = function (smallify, opts, done) {
   const { keepAliveTimeout, connectionTimeout, port, address } = opts
 
   const server = http.createServer((req, rep) => {
-    if (this[kServerListening] === true) {
-      requestComing.call(smallify, req, rep)
-    }
+    requestComing(req, rep)
   })
 
   server.keepAliveTimeout = keepAliveTimeout
   server.setTimeout(connectionTimeout)
-
-  this[kServerListening] = false
   this[kSmallifyServer] = server
 
   function onError (err) {
@@ -43,7 +39,6 @@ module.exports = function (smallify, opts, done) {
     const address = ensureServerAddress.call(this)
     $log.info('server listening at ' + address)
     server.removeListener('error', onError)
-    this[kServerListening] = true
     done()
   })
 }

@@ -22,8 +22,8 @@ const { isArrow } = require('extra-function')
 const { buildAjvErrorsMsg } = require('./validation')
 
 const FastQ = require('fastq')
+const flows = require('./flows')
 const { default: AJV } = require('ajv')
-const asyncLib = require('async')
 const lightMyRequest = require('light-my-request')
 
 const ajv = new AJV({ useDefaults: true, coerceTypes: true })
@@ -46,16 +46,13 @@ function activeQueue (name) {
 }
 
 function routerWorker (route, done) {
-  asyncLib.series(
-    [onRouteFlow.bind(route), registerRouteFlow.bind(route)],
-    e => {
-      if (e) {
-        throwError(this, e)
-      } else {
-        done()
-      }
+  flows.series([onRouteFlow.bind(route), registerRouteFlow.bind(route)], e => {
+    if (e) {
+      throwError(this, e)
+    } else {
+      done()
     }
-  )
+  })
 }
 
 function injectWorker (inject, done) {

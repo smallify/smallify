@@ -20,8 +20,6 @@ module.exports = {
   kSmallifyParserDict: Symbol('smallify.parser'),
   kSmallifySerializerDict: Symbol('smallify.serializer'),
 
-  kServerListening: Symbol('server.listening'),
-
   kQueueRoutes: Symbol('queue.routes'),
   kQueueInjects: Symbol('queue.injects'),
 
