@@ -17,6 +17,17 @@ const routeHooks = [
   'onResponse'
 ]
 
+const scopeHooks = ['onClose', 'onError', 'onRoute']
+
+function Hooks () {
+  const hooks = [...routeHooks, ...scopeHooks]
+  for (const h of hooks) {
+    this[h] = []
+  }
+}
+
+function noop () {}
+
 function printError (e) {
   this.$log.error(e)
 }
@@ -41,16 +52,17 @@ function addHook (name, fn) {
 
 function runHooks (name, ins, done, ...args) {
   const parent = this[kSmallifyParent]
+  done = done || noop
 
   function _runHooks (err) {
     if (err) {
-      return done && done(err)
+      return done(err)
     }
 
     const hooks = this[kSmallifyHooks]
 
     if (!(name in hooks)) {
-      return done && done()
+      return done()
     }
 
     const doHooks = [...hooks[name]]
@@ -61,13 +73,17 @@ function runHooks (name, ins, done, ...args) {
       }
     }
 
+    if (doHooks.length === 0) {
+      return done()
+    }
+
     let doCount = 0
     flows.whilst(
       function (next) {
         next(null, doCount < doHooks.length)
       },
       function (next) {
-        function _done (e) {
+        function hookDone (e) {
           doCount++
           next(e)
         }
@@ -78,17 +94,15 @@ function runHooks (name, ins, done, ...args) {
           }
           const pLike = doHook(...args)
           if (pLike && typeof pLike.then === 'function') {
-            pLike.then(() => done()).catch(e => _done(e))
+            pLike.then(() => hookDone()).catch(e => hookDone(e))
           } else {
-            _done()
+            hookDone()
           }
         } catch (e) {
-          _done(e)
+          hookDone(e)
         }
       },
-      function (err) {
-        done && done(err)
-      }
+      done
     )
   }
 
@@ -101,18 +115,7 @@ function runHooks (name, ins, done, ...args) {
 
 function initHooks () {
   this.addHook = addHook.bind(this)
-  this[kSmallifyHooks] = {
-    onClose: [],
-    onError: [],
-
-    onRoute: [],
-
-    onRequest: [],
-    onBeforeValidation: [],
-    onBeforeHandler: [],
-    onBeforeSerializer: [],
-    onResponse: []
-  }
+  this[kSmallifyHooks] = new Hooks()
 }
 
 function attachHooks () {
@@ -168,13 +171,8 @@ module.exports = {
   throwError,
   onRouteFlow,
   onRequestFlow,
-  onBeforeParsingFlow: generalLifecycle('onBeforeParsing'),
-  onAfterParsingFlow: generalLifecycle('onAfterParsing'),
   onBeforeValidationFlow: generalLifecycle('onBeforeValidation'),
-  onAfterValidationFlow: generalLifecycle('onAfterValidation'),
   onBeforeHandlerFlow: generalLifecycle('onBeforeHandler'),
-  onAfterHandlerFlow: generalLifecycle('onAfterHandler'),
   onBeforeSerializerFlow: generalLifecycle('onBeforeSerializer'),
-  onAfterSerializerFlow: generalLifecycle('onAfterSerializer'),
   onResponseFlow
 }

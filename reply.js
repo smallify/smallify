@@ -62,15 +62,7 @@ class Reply {
     value = value || ''
 
     const replyHeaders = this[kReplyHeaders]
-
-    if (replyHeaders[key] && key === 'set-cookie') {
-      if (typeof replyHeaders[key] === 'string') {
-        replyHeaders[key] = [replyHeaders[key]]
-      }
-      replyHeaders[key].push(value)
-    } else {
-      replyHeaders[key] = value
-    }
+    replyHeaders[key] = value
 
     return this
   }

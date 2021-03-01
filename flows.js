@@ -1,30 +1,28 @@
 module.exports = {
   series (flows, done) {
-    function _next (i) {
+    function iterator (i) {
       if (i === flows.length) {
         return done()
       }
 
-      function _done (err) {
+      function next (err) {
         if (err) {
           return done(err)
         }
 
-        _next(i + 1)
+        iterator(i + 1)
       }
 
       const flowFn = flows[i]
-      flowFn(_done)
+      flowFn(next)
     }
-    process.nextTick(() => {
-      _next(0)
-    })
+    iterator(0)
   },
   whilst (test, fn, done) {
-    function doTest (next) {
+    function iterator (next) {
       test((err, hasNext) => {
         if (err) {
-          return next(err)
+          return done(err)
         }
 
         if (hasNext) {
@@ -35,19 +33,15 @@ module.exports = {
       })
     }
 
-    function doFn (err) {
-      if (err) {
-        return done(err)
-      }
-
+    function then () {
       fn(err => {
         if (err) {
           return done(err)
         }
-        doTest(doFn)
+        iterator(then)
       })
     }
 
-    doTest(doFn)
+    iterator(then)
   }
 }
