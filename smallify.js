@@ -72,6 +72,10 @@ function Smallify (opts) {
 }
 
 Smallify.prototype.decorate = function (prop, value) {
+  if (typeof value === 'function') {
+    value = value.bind(this)
+  }
+
   this[prop] = value
   this[kSmallifyDecorates].push(prop)
   return this
@@ -83,6 +87,10 @@ Smallify.prototype.hasDecorator = function (prop) {
 
 Smallify.prototype.decorateRequest = function (prop, value) {
   const req = this[kSmallifyRequest]
+
+  if (typeof value === 'function') {
+    value = value.bind(req)
+  }
 
   req[prop] = value
   return this
@@ -96,6 +104,10 @@ Smallify.prototype.hasRequestDecorator = function (prop) {
 
 Smallify.prototype.decorateReply = function (prop, value) {
   const rep = this[kSmallifyReply]
+
+  if (typeof value === 'function') {
+    value = value.bind(rep)
+  }
 
   rep[prop] = value
   return this
