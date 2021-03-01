@@ -4,7 +4,7 @@
     "SMALLIFY_PINO_LEVEL": {
       "enum": ["fatal", "error", "warn", "info", "debug", "trace", "silent"]
     },
-    "SMALLIFY_PINO_PRETTY": { "type": "boolean", "default": false },
+    "SMALLIFY_PINO_PRETTY": { "type": "boolean" },
     "SMALLIFY_ROUTER_PREFIX": { "type": "string", "default": "" },
     "SMALLIFY_SERVER_PORT": { "type": "number" },
     "SMALLIFY_SERVER_ADDRESS": { "type": "string" }
