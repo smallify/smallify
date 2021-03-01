@@ -31,4 +31,5 @@ smallify.register(
 smallify.ready(async e => {
   e && smallify.$log.error(e.message)
   smallify.print()
+  smallify.close()
 })

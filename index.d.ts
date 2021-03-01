@@ -7,11 +7,11 @@ export = factory
 export {
   ServerOptions,
   SmallifyOptions,
-  Smallify,
   SmallifyDoneCallback,
   SmallifyAfter,
   SmallifyReady,
-  SmallifyClose
+  SmallifyClose,
+  Smallify
 } from './types/smallify'
 
 export {
@@ -28,3 +28,30 @@ export {
   PluginCallback,
   SmallifyPlugin
 } from './types/plugin'
+
+export { InjectHandler, InjectResult, Inject } from './types/inject'
+
+export {
+  ContentTypeParserDone,
+  ContentTypeParserCallback
+} from './types/parser'
+
+export {
+  Methods,
+  Request,
+  Reply,
+  RouteHandler,
+  OnRouteCallback,
+  OnRequestCallback,
+  OnBeforeValidationCallback,
+  OnBeforeHandlerCallback,
+  OnBeforeSerializerCallback,
+  OnResponseCallback,
+  SchemaOptions,
+  Route
+} from './types/route'
+
+export {
+  ContentTypeSerializerDone,
+  ContentTypeSerializerCallback
+} from './types/serializer'

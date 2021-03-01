@@ -36,4 +36,9 @@ module.exports = function (smallify, opts, done) {
     server.removeListener('error', done)
     done()
   })
+
+  smallify.addHook('onClose', function () {
+    $log.info('server closing...')
+    server.close()
+  })
 }

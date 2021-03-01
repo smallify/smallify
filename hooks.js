@@ -48,6 +48,8 @@ function addHook (name, fn) {
   }
 
   hooks[name].push(fn)
+
+  return this
 }
 
 function runHooks (name, ins, done, ...args) {
