@@ -185,9 +185,25 @@ function requestComing (req, rep) {
     throwError(this, e)
   }
 
+  function fixedBind (obj) {
+    for (const k in obj) {
+      const v = obj[k]
+      if (typeof v === 'function') {
+        obj[k] = v.bind(obj)
+      }
+    }
+  }
+
   rawBody
     .call(route, req)
     .then(route => {
+      const req = route[kRouteRequest]
+      const rep = route[kRouteReply]
+
+      // fixed bind
+      fixedBind(req)
+      fixedBind(rep)
+
       flows.series(
         [
           onRequestFlow.bind(route),
