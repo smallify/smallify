@@ -174,7 +174,11 @@ function requestComing (req, rep) {
     smallifyRep.sent = true
     e.statusCode = e.statusCode || 400
 
-    rep.writeHead(e.statusCode).end(
+    const headers = smallifyRep[kReplyHeaders]
+    delete headers['content-type']
+    delete headers['content-length']
+
+    rep.writeHead(e.statusCode, headers).end(
       JSON.stringify({
         statusCode: e.statusCode,
         code: e.statusCode + '',
