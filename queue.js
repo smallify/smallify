@@ -140,7 +140,7 @@ function addRoute (opts, handler) {
     route.bodyLimit = server.bodyLimit
   }
 
-  this[kSmallifyRoutes].push(route.url)
+  this[kSmallifyRoutes].push(`${route.method} ${route.url}`)
   this[kQueueRoutes].push(route)
 }
 
