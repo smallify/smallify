@@ -25,13 +25,14 @@ module.exports = function (smallify, opts, done) {
   const server = new Server()
   server.keepAliveTimeout = keepAliveTimeout
   server.setTimeout(connectionTimeout)
-  this[kSmallifyServer] = server
+
+  smallify[kSmallifyServer] = server
 
   server.once('error', done)
   server.on('request', requestComing)
 
   server.listen(port, address, () => {
-    const address = ensureServerAddress.call(this)
+    const address = ensureServerAddress.call(smallify)
     $log.info('server listening at ' + address)
     server.removeListener('error', done)
     done()
