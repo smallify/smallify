@@ -15,6 +15,7 @@ const {
 
 const {
   throwError,
+  hasHook,
   onRequestFlow,
   onBeforeValidationFlow,
   onBeforeHandlerFlow,
@@ -208,21 +209,34 @@ function requestComing (req, rep) {
       fixedBind(req)
       fixedBind(rep)
 
-      flows.series(
-        [
-          onRequestFlow.bind(route),
-          onParsingFlow.bind(route),
-          onBeforeValidationFlow.bind(route),
-          onValidationFlow.bind(route),
-          onBeforeHandlerFlow.bind(route),
-          onHandlerFlow.bind(route),
-          onBeforeSerializerFlow.bind(route),
-          onSerializerFlow.bind(route),
-          onResponseFlow.bind(route),
-          sendResponseFlow.bind(route)
-        ],
-        onCatch.bind($smallify)
-      )
+      const chain = []
+
+      if (hasHook.call(route, 'onRequest')) {
+        chain.push(onRequestFlow)
+      }
+      chain.push(onParsingFlow)
+
+      if (hasHook.call(route, 'onBeforeValidation')) {
+        chain.push(onBeforeValidationFlow)
+      }
+      chain.push(onValidationFlow)
+
+      if (hasHook.call(route, 'onBeforeHandler')) {
+        chain.push(onBeforeHandlerFlow)
+      }
+      chain.push(onHandlerFlow)
+
+      if (hasHook.call(route, 'onBeforeSerializer')) {
+        chain.push(onBeforeSerializerFlow)
+      }
+      chain.push(onSerializerFlow)
+
+      if (hasHook.call(route, 'onResponse')) {
+        chain.push(onResponseFlow)
+      }
+      chain.push(sendResponseFlow)
+
+      flows.series(route, chain, onCatch.bind($smallify))
     })
     .catch(onCatch.bind($smallify))
 }

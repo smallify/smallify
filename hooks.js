@@ -2,7 +2,10 @@ const flows = require('./flows')
 const { isArrow } = require('extra-function')
 const { HookCallbackError } = require('./errors')
 const {
-  kSmallifyHooks,
+  kSmallifyFullname,
+  kSmallifyLevel,
+  kSmallifyChildren,
+  kHookLevel,
   kSmallifyParent,
   kRouteRequest,
   kRouteReply,
@@ -19,12 +22,7 @@ const routeHooks = [
 
 const scopeHooks = ['onClose', 'onError', 'onRoute']
 
-function Hooks () {
-  const hooks = [...routeHooks, ...scopeHooks]
-  for (const h of hooks) {
-    this[h] = []
-  }
-}
+const hooks = {}
 
 function noop () {}
 
@@ -33,91 +31,106 @@ function printError (e) {
 }
 
 function addHook (name, fn) {
-  const hooks = this[kSmallifyHooks]
-  if (!(name in hooks)) {
-    return
+  if (typeof fn !== 'function') {
+    return this
   }
 
   if (isArrow(fn)) {
     const e = new HookCallbackError()
-    return runHooks.call(this, 'onError', this, null, e)
+    runHooks.call(this, 'onError', this, null, e)
+    return this
   }
 
-  if (typeof fn !== 'function') {
-    return
+  if (fn[kHookLevel] === undefined) {
+    fn[kHookLevel] = this[kSmallifyLevel]
+  }
+  const children = this[kSmallifyChildren]
+  const fullname = this[kSmallifyFullname]
+  const hName = `${fullname}.${name}`
+
+  if (!(hName in hooks)) {
+    hooks[hName] = []
   }
 
-  hooks[name].push(fn)
+  for (const c of children) {
+    c.addHook(name, fn)
+  }
+
+  hooks[hName].push(fn)
+  hooks[hName] = hooks[hName].sort((a, b) => {
+    return a[kHookLevel] - b[kHookLevel]
+  })
 
   return this
 }
 
 function runHooks (name, ins, done, ...args) {
-  const parent = this[kSmallifyParent]
   done = done || noop
 
-  function _runHooks (err) {
-    if (err) {
-      return done(err)
+  const fullname = this[kSmallifyFullname]
+  const hName = `${fullname}.${name}`
+
+  if (!(hName in hooks)) {
+    return done()
+  }
+
+  const doHooks = [...hooks[hName]]
+  if (ins && name in ins) {
+    const insHook = ins[name]
+    if (typeof insHook === 'function') {
+      doHooks.push(insHook)
     }
+  }
 
-    const hooks = this[kSmallifyHooks]
+  if (doHooks.length === 0) {
+    return done()
+  }
 
-    if (!(name in hooks)) {
-      return done()
-    }
-
-    const doHooks = [...hooks[name]]
-    if (ins && name in ins) {
-      const insHook = ins[name]
-      if (typeof insHook === 'function') {
-        doHooks.push(insHook)
+  let doCount = 0
+  flows.whilst(
+    function (next) {
+      next(null, doCount < doHooks.length)
+    },
+    function (next) {
+      function doNext (e) {
+        doCount++
+        next(e)
       }
-    }
-
-    if (doHooks.length === 0) {
-      return done()
-    }
-
-    let doCount = 0
-    flows.whilst(
-      function (next) {
-        next(null, doCount < doHooks.length)
-      },
-      function (next) {
-        function hookDone (e) {
-          doCount++
-          next(e)
+      try {
+        const doHook = doHooks[doCount]
+        const pLike = doHook.call(ins, ...args)
+        if (pLike && typeof pLike.then === 'function') {
+          pLike.then(() => doNext()).catch(e => doNext(e))
+        } else {
+          doNext()
         }
-        try {
-          let doHook = doHooks[doCount]
-          if (ins) {
-            doHook = doHook.bind(ins)
-          }
-          const pLike = doHook(...args)
-          if (pLike && typeof pLike.then === 'function') {
-            pLike.then(() => hookDone()).catch(e => hookDone(e))
-          } else {
-            hookDone()
-          }
-        } catch (e) {
-          hookDone(e)
-        }
-      },
-      done
-    )
-  }
-
-  if (parent) {
-    runHooks.call(parent, name, ins, _runHooks.bind(this), ...args)
-  } else {
-    _runHooks.call(this)
-  }
+      } catch (e) {
+        doNext(e)
+      }
+    },
+    done
+  )
 }
 
 function initHooks () {
   this.addHook = addHook.bind(this)
-  this[kSmallifyHooks] = new Hooks()
+
+  const parent = this[kSmallifyParent]
+
+  if (!parent) {
+    return
+  }
+
+  const hookNames = [...scopeHooks, ...routeHooks]
+  const fullname = this[kSmallifyFullname]
+  const parentFullname = parent[kSmallifyFullname]
+
+  for (const hName of hookNames) {
+    const parentHook = hooks[`${parentFullname}.${hName}`]
+    if (Array.isArray(parentHook)) {
+      hooks[`${fullname}.${hName}`] = [...parentHook]
+    }
+  }
 }
 
 function attachHooks () {
@@ -145,6 +158,16 @@ function generalLifecycle (hookName) {
   }
 }
 
+function hasLifecycle (hookName) {
+  const { $smallify } = this
+
+  const fullname = $smallify[kSmallifyFullname]
+  const hName = `${fullname}.${hookName}`
+  const hookItems = hooks[hName]
+
+  return Array.isArray(hookItems) && hookItems.length > 0
+}
+
 function onRequestFlow (next) {
   const now = Date.now()
   const { $log } = this
@@ -170,7 +193,11 @@ module.exports = {
   initHooks,
   attachHooks,
   routeHooks,
+  scopeHooks,
   throwError,
+
+  hasHook: hasLifecycle,
+
   onRouteFlow,
   onRequestFlow,
   onBeforeValidationFlow: generalLifecycle('onBeforeValidation'),

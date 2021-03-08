@@ -2,6 +2,8 @@ module.exports = {
   // smallify properties
   kSmallifyRoot: Symbol('smallify.root'),
   kSmallifyName: Symbol('smallify.name'),
+  kSmallifyLevel: Symbol('smallify.level'),
+  kSmallifyFullname: Symbol('smallify.fullname'),
   kSmallifyOptions: Symbol('smallify.options'),
   kSmallifyRouterPrefix: Symbol('smallify.router.prefix'),
   kSmallifyVersion: Symbol('smallify.version'),
@@ -16,7 +18,6 @@ module.exports = {
   kSmallifyDecorates: Symbol('smallify.decorates'),
   kSmallifyRequest: Symbol('smallify.request'),
   kSmallifyReply: Symbol('smallify.reply'),
-  kSmallifyHooks: Symbol('smallify.hooks'),
   kSmallifyParserDict: Symbol('smallify.parser'),
   kSmallifySerializerDict: Symbol('smallify.serializer'),
 
@@ -48,6 +49,8 @@ module.exports = {
   kValidationBody: Symbol('validation.body'),
 
   kSerializerPayload: Symbol('serializer.payload'),
+
+  kHookLevel: Symbol('hook.level'),
 
   kSmallifyPluginMeta: Symbol.for('smallify.plugin.meta')
 }

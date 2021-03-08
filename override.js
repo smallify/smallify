@@ -1,5 +1,7 @@
 const {
   kSmallifyName,
+  kSmallifyFullname,
+  kSmallifyLevel,
   kSmallifyDecorates,
   kSmallifyRoutes,
   kSmallifyChildren,
@@ -57,6 +59,8 @@ function avvioOverride (old, fn, opts) {
 
   ins[kSmallifyParent] = old
   ins[kSmallifyName] = opts.name
+  ins[kSmallifyLevel] = old[kSmallifyLevel] + 1
+  ins[kSmallifyFullname] = `${old[kSmallifyFullname]}.${opts.name}`
   ins[kSmallifyRouterPrefix] = buildRouterPrefix(
     old[kSmallifyRouterPrefix],
     opts.prefix

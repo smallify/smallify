@@ -1,6 +1,8 @@
 const {
   kSmallifyRoot,
   kSmallifyName,
+  kSmallifyFullname,
+  kSmallifyLevel,
   kSmallifyOptions,
   kSmallifyRouterPrefix,
   kSmallifyVersion,
@@ -34,6 +36,8 @@ function Smallify (opts) {
 
   this[kSmallifyRoot] = this
   this[kSmallifyName] = 'root'
+  this[kSmallifyFullname] = 'root'
+  this[kSmallifyLevel] = 0
   this[kSmallifyOptions] = smallifyOptions(opts)
   this[kSmallifyRouterPrefix] = opts.router.prefix
   this[kSmallifyVersion] = require('./package.json').version

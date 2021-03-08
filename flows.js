@@ -1,5 +1,5 @@
 module.exports = {
-  series (flows, done) {
+  series (thisArg, flows, done) {
     function iterator (i) {
       if (i === flows.length) {
         return done()
@@ -14,7 +14,7 @@ module.exports = {
       }
 
       const flowFn = flows[i]
-      flowFn(next)
+      flowFn.call(thisArg, next)
     }
     iterator(0)
   },

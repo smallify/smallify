@@ -46,7 +46,7 @@ function activeQueue (name) {
 }
 
 function routerWorker (route, done) {
-  flows.series([onRouteFlow.bind(route), registerRouteFlow.bind(route)], e => {
+  flows.series(route, [onRouteFlow, registerRouteFlow], e => {
     if (e) {
       throwError(this, e)
     } else {
