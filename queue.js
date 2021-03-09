@@ -50,6 +50,7 @@ function routerWorker (route, done) {
     if (e) {
       throwError(this, e)
     } else {
+      this[kSmallifyRoutes].push(`${route.method} ${route.url}`)
       done()
     }
   })
@@ -140,7 +141,6 @@ function addRoute (opts, handler) {
     route.bodyLimit = server.bodyLimit
   }
 
-  this[kSmallifyRoutes].push(`${route.method} ${route.url}`)
   this[kQueueRoutes].push(route)
 }
 
