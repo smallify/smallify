@@ -9,6 +9,7 @@ const { throwError } = require('./hooks')
 const { ContentTypeParserError } = require('./errors')
 const { isArrow } = require('extra-function')
 const secureJson = require('secure-json-parse')
+const queryString = require('querystring')
 
 function rawBody (req) {
   return new Promise((resolve, reject) => {
@@ -90,7 +91,12 @@ function applicationJson (req) {
 }
 
 function textPlain (req, done) {
-  return done(req.body.toString('utf-8'))
+  return done(null, req.body.toString('utf-8'))
+}
+
+function applicationUrlencoded (req, done) {
+  const body = req.body.toString('utf-8')
+  done(null, queryString.parse(body))
 }
 
 function addContentTypeParser (contentType, parserFn) {
@@ -145,6 +151,10 @@ function initParser () {
 function attachParser () {
   this.addContentTypeParser('application/json', applicationJson)
   this.addContentTypeParser('text/plain', textPlain)
+  this.addContentTypeParser(
+    'application/x-www-form-urlencoded',
+    applicationUrlencoded
+  )
 }
 
 function runParser (contentType, route, done) {

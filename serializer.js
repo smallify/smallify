@@ -9,6 +9,7 @@ const { kSerializerPayload } = require('./symbols')
 const { ContentTypeSerializerError } = require('./errors')
 const { isArrow } = require('extra-function')
 const { throwError } = require('./hooks')
+const queryString = require('querystring')
 
 function applicationJson (rep, done) {
   let serializerCall = this[kSerializerPayload]
@@ -24,6 +25,12 @@ function textPlain (rep, done) {
   const payload = rep.payload
   rep.header('content-length', payload.length)
   return done(null, payload)
+}
+
+function applicationUrlencoded (rep, done) {
+  const payload = queryString.stringify(rep.payload)
+  rep.header('content-length', payload.length)
+  done(null, payload)
 }
 
 function attachSerializer () {
@@ -46,6 +53,10 @@ function attachSerializer () {
 
   this.addContentTypeSerializer('application/json', applicationJson)
   this.addContentTypeSerializer('text/plain', textPlain)
+  this.addContentTypeSerializer(
+    'application/x-www-form-urlencoded',
+    applicationUrlencoded
+  )
 }
 
 function addContentTypeSerializer (contentType, serializerFn) {

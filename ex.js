@@ -28,8 +28,8 @@ smallify.register(
                 }
               }
             },
-            handler (req, rep) {
-              rep.send({ hello: 'world' })
+            async handler (req, rep) {
+              // return { hello: 'world' }
             }
           })
         },
@@ -46,5 +46,6 @@ smallify.register(
 
 smallify.ready(async e => {
   e && smallify.$log.error(e.message)
+  smallify.print()
   // smallify.close()
 })

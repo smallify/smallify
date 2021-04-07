@@ -64,13 +64,13 @@ export interface Smallify {
   ready: SmallifyReady<Smallify>
   close: SmallifyClose<Smallify>
 
-  decorate(prop: string, value: any): Smallify
+  decorate(prop: string, value: unknown): Smallify
   hasDecorator(prop: string): boolean
 
-  decorateRequest(prop: string, value: any): Smallify
+  decorateRequest(prop: string, value: unknown): Smallify
   hasRequestDecorator(prop: string): boolean
 
-  decorateReply(prop: string, value: any): Smallify
+  decorateReply(prop: string, value: unknown): Smallify
   hasReplyDecorator(prop: string): boolean
 
   addContentTypeParser(
@@ -87,7 +87,7 @@ export interface Smallify {
 
   print(): void
 
-  route(opts: ROTE.Route, handler?: ROTE.RouteHandler<ROTR.Route>): Smallify
+  route(opts: ROTE.Route, handler?: ROTE.RouteHandler<ROTE.Route>): Smallify
   inject(
     opts: IJCT.Inject,
     handler?: IJCT.InjectHandler<IJCT.Inject, IJCT.InjectResult>
