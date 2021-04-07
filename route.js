@@ -24,7 +24,7 @@ function onHandlerFlow (next) {
         .then(payload => {
           if (payload) {
             rep.send(payload)
-          } else {
+          } else if (rep.sent === false) {
             const msg = `Promise may not be fulfilled with 'undefined' when statusCode is not 204; url: ${url}`
             $log.warn(msg)
           }
