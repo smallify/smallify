@@ -56,7 +56,10 @@ function registerRouteFlow (next) {
 
   const findResult = router.find(method, url)
   if (findResult[0]) {
-    return next(new RouteExistsError(url))
+    const route = findResult[0]
+    if (route.url === url) {
+      return next(new RouteExistsError(url))
+    }
   }
 
   $log.debug(`route:${method} ${url}`)
