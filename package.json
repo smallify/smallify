@@ -1,6 +1,6 @@
 {
   "name": "smallify",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "main": "index.js",
   "typings": "index.d.ts",
   "repository": "https://github.com/smallify/smallify.git",

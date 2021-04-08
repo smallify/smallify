@@ -8,9 +8,11 @@ const {
 } = require('./symbols')
 
 const { ReplyAlreadySentError, InvalidStatusCodeError } = require('./errors')
+const { EventEmitter } = require('events')
 
-class Reply {
+class Reply extends EventEmitter {
   constructor () {
+    super()
     this[kReplyHeaders] = {}
   }
 
@@ -158,6 +160,7 @@ class Reply {
     }
 
     this[kReplyPayload] = payload
+    this.emit('sent')
     return this
   }
 }
