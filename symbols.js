@@ -40,6 +40,7 @@ module.exports = {
   kReplyRaw: Symbol('reply.raw'),
   kReplySent: Symbol('reply.sent'),
   kReplyAllowSend: Symbol('reply.allow.send'),
+  kReplyFlowDone: Symbol('reply.flow.done'),
   kReplyHeaders: Symbol('reply.headers'),
   kReplyHasStatusCode: Symbol('reply.has.status.code'),
   kReplyPayload: Symbol('reply.payload'),

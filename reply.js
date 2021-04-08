@@ -4,15 +4,14 @@ const {
   kReplyHeaders,
   kReplyHasStatusCode,
   kReplyPayload,
-  kReplyAllowSend
+  kReplyAllowSend,
+  kReplyFlowDone
 } = require('./symbols')
 
 const { ReplyAlreadySentError, InvalidStatusCodeError } = require('./errors')
-const { EventEmitter } = require('events')
 
-class Reply extends EventEmitter {
+class Reply {
   constructor () {
-    super()
     this[kReplyHeaders] = {}
   }
 
@@ -135,7 +134,7 @@ class Reply extends EventEmitter {
     }
 
     const allowSend = this[kReplyAllowSend]
-    if (!allowSend) return this
+    if (!allowSend) return
 
     const contentTypeKey = 'content-type'
     const contentType = this.getHeader(contentTypeKey)
@@ -160,8 +159,7 @@ class Reply extends EventEmitter {
     }
 
     this[kReplyPayload] = payload
-    this.emit('sent')
-    return this
+    this[kReplyFlowDone]()
   }
 }
 

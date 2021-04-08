@@ -3,7 +3,6 @@ import HTTP from 'http'
 import NET from 'net'
 import { JSONSchemaType } from 'ajv'
 import { Smallify } from './smallify'
-import { EventEmitter } from 'events'
 
 declare type Known =
   | Record<string, any>
@@ -36,7 +35,7 @@ export interface Request {
   url: Readonly<string>
 }
 
-export interface Reply extends EventEmitter {
+export interface Reply {
   raw: Readonly<HTTP.ServerResponse>
   sent: boolean
   statusCode: number
@@ -56,10 +55,7 @@ export interface Reply extends EventEmitter {
   redirect(code: number, destUrl: string): void
   notFound(): void
 
-  send(payload: any): Reply
-
-  on(name: 'sent', fn: CallableFunction)
-  once(name: 'sent', fn: CallableFunction)
+  send(payload: any): void
 }
 
 export type RouteHandler<S> = (
