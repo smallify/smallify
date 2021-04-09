@@ -160,7 +160,17 @@ function attachParser () {
 function runParser (contentType, route, done) {
   const parserDict = this[kSmallifyParserDict]
 
-  if (!(contentType in parserDict)) {
+  const types = contentType.split(';')
+  let parser = null
+
+  for (const cType of types) {
+    if (cType in parserDict) {
+      parser = parserDict[cType]
+      break
+    }
+  }
+
+  if (parser === null) {
     // const parent = this[kSmallifyParent]
 
     // if (parent) {
@@ -171,7 +181,6 @@ function runParser (contentType, route, done) {
     // }
   }
 
-  const parser = parserDict[contentType]
   const req = route[kRouteRequest]
 
   let hasDone = false
