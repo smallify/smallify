@@ -17,19 +17,19 @@ function applicationJson (rep, done) {
     serializerCall = JSON.stringify
   }
   const payload = serializerCall(rep.payload)
-  rep.header('content-length', payload.length)
+  rep.header('content-length', payload.length || '0')
   return done(null, payload)
 }
 
 function textPlain (rep, done) {
   const payload = rep.payload
-  rep.header('content-length', payload.length)
+  rep.header('content-length', payload.length || '0')
   return done(null, payload)
 }
 
 function applicationUrlencoded (rep, done) {
   const payload = queryString.stringify(rep.payload)
-  rep.header('content-length', payload.length)
+  rep.header('content-length', payload.length || '0')
   done(null, payload)
 }
 
