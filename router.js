@@ -134,9 +134,17 @@ function sendResponseFlow (next) {
     payload = null
   }
 
-  if (Buffer.isBuffer(payload) && !rep.hasHeader('content-length')) {
-    rep.header('content-length', Buffer.byteLength(payload))
+  if (typeof payload === 'string') {
+    payload = Buffer.from(payload)
   }
+
+  if (payload && Buffer.isBuffer(payload) && !rep.hasHeader('content-length')) {
+    rep.header('content-length', payload.byteLength)
+  }
+
+  // if (Buffer.isBuffer(payload) && !rep.hasHeader('content-length')) {
+  //   rep.header('content-length', Buffer.byteLength(payload))
+  // }
 
   rep.sent = true
   raw.writeHead(statusCode, rep[kReplyHeaders])
