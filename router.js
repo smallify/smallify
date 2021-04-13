@@ -139,7 +139,7 @@ function sendResponseFlow (next) {
   }
 
   if (payload && Buffer.isBuffer(payload) && !rep.hasHeader('content-length')) {
-    rep.header('content-length', payload.byteLength)
+    rep.header('content-length', payload.byteLength || '0')
   }
 
   // if (Buffer.isBuffer(payload) && !rep.hasHeader('content-length')) {
