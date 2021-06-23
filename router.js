@@ -111,7 +111,8 @@ function sendResponseFlow (next) {
   if (rep.sent) {
     return next()
   }
-
+  
+  rep.sent = true
   const raw = rep.raw
   const statusCode = rep.statusCode
   let payload = rep.payload
@@ -146,7 +147,6 @@ function sendResponseFlow (next) {
   //   rep.header('content-length', Buffer.byteLength(payload))
   // }
 
-  rep.sent = true
   raw.writeHead(statusCode, rep[kReplyHeaders])
   raw.end(payload, null, null)
   return next()
